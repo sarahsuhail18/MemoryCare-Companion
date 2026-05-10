@@ -1,6 +1,7 @@
 const express = require("express");
 const { body, validationResult } = require("express-validator");
-const { signup, login, logout, forgotPassword, resetPassword } = require("../controllers/authController");
+const { signup, login, logout, forgotPassword, resetPassword, changePassword } = require("../controllers/authController");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -36,5 +37,8 @@ router.post("/login",
 router.post("/logout", logout);
 router.post("/forgot-password", body("email").isEmail().withMessage("Valid email required"), handleValidation, forgotPassword);
 router.post("/reset-password", resetPassword);
+
+// NEW: Change password for logged-in users
+router.post("/change-password", protect, changePassword);
 
 module.exports = router;
