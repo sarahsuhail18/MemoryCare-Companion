@@ -7,7 +7,8 @@ const {
   assignCaregiverToPatient,
   removeAssignment,
   getUsersByRole,
-  createAdmin
+  createAdmin,
+  getActivityLog  // NEW
 } = require("../controllers/adminController");
 
 const { protect, authorize } = require("../middleware/authMiddleware");
@@ -22,5 +23,8 @@ router.patch("/users/:id/status", protect, authorize("admin"), toggleUserStatus)
 router.patch("/users/:id/role", protect, authorize("admin"), changeUserRole);
 router.post("/assign-caregiver", protect, authorize("admin"), assignCaregiverToPatient);
 router.delete("/assign-caregiver", protect, authorize("admin"), removeAssignment);
+
+// NEW: Activity log
+router.get("/activity-log", protect, authorize("admin"), getActivityLog);
 
 module.exports = router;

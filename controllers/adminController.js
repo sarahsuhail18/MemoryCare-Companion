@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Log = require("../models/Log"); // NEW
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -42,6 +43,14 @@ exports.toggleUserStatus = async (req, res) => {
     user.isActive = !user.isActive;
     await user.save();
 
+    // NEW: Log this action
+    await Log.create({
+      action: user.isActive ? "account_activated" : "account_deactivated",
+      performedBy: req.session.user.email,
+      targetUser: user.email,
+      details: `Account ${user.isActive ? "activated" : "deactivated"} for ${user.fullName} (${user.role})`
+    });
+
     res.status(200).json({
       success: true,
       message: `User account ${user.isActive ? "activated" : "deactivated"} successfully`
@@ -76,8 +85,17 @@ exports.changeUserRole = async (req, res) => {
       });
     }
 
+    const oldRole = user.role;
     user.role = role;
     await user.save();
+
+    // NEW: Log this action
+    await Log.create({
+      action: "role_changed",
+      performedBy: req.session.user.email,
+      targetUser: user.email,
+      details: `Role changed from "${oldRole}" to "${role}" for ${user.fullName}`
+    });
 
     res.status(200).json({
       success: true,
@@ -165,13 +183,11 @@ exports.assignCaregiverToPatient = async (req, res) => {
       });
     }
 
-    // Add patient to caregiver's assigned patients
     if (!caregiver.assignedPatients.includes(patientId)) {
       caregiver.assignedPatients.push(patientId);
       await caregiver.save();
     }
 
-    // Add caregiver to patient's assigned caregivers
     if (!patient.assignedCaregivers.includes(caregiverId)) {
       patient.assignedCaregivers.push(caregiverId);
       await patient.save();
@@ -207,26 +223,18 @@ exports.removeAssignment = async (req, res) => {
     const patient = await User.findById(patientId);
 
     if (!caregiver) {
-      return res.status(404).json({
-        success: false,
-        message: "Caregiver not found"
-      });
+      return res.status(404).json({ success: false, message: "Caregiver not found" });
     }
 
     if (!patient) {
-      return res.status(404).json({
-        success: false,
-        message: "Patient not found"
-      });
+      return res.status(404).json({ success: false, message: "Patient not found" });
     }
 
-    // Remove patient from caregiver's assigned patients
     caregiver.assignedPatients = caregiver.assignedPatients.filter(
       (id) => id.toString() !== patientId
     );
     await caregiver.save();
 
-    // Remove caregiver from patient's assigned caregivers
     patient.assignedCaregivers = patient.assignedCaregivers.filter(
       (id) => id.toString() !== caregiverId
     );
@@ -252,27 +260,18 @@ exports.getUsersByRole = async (req, res) => {
     const { role } = req.query;
 
     if (!role) {
-      return res.status(400).json({
-        success: false,
-        message: "Role parameter is required"
-      });
+      return res.status(400).json({ success: false, message: "Role parameter is required" });
     }
 
     if (!["user", "caregiver"].includes(role)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid role"
-      });
+      return res.status(400).json({ success: false, message: "Invalid role" });
     }
 
     const users = await User.find({ role, isActive: true })
       .select("fullName email role assignedPatients")
       .sort({ fullName: 1 });
 
-    res.status(200).json({
-      success: true,
-      users
-    });
+    res.status(200).json({ success: true, users });
   } catch (error) {
     console.error("Get Users by Role Error:", error);
     res.status(500).json({
@@ -282,6 +281,7 @@ exports.getUsersByRole = async (req, res) => {
     });
   }
 };
+
 // Create a new admin account (only callable by existing admin)
 exports.createAdmin = async (req, res) => {
   try {
@@ -307,6 +307,14 @@ exports.createAdmin = async (req, res) => {
 
     const admin = await User.create({ fullName, email, password, role: "admin" });
 
+    // NEW: Log this action
+    await Log.create({
+      action: "admin_created",
+      performedBy: req.session.user.email,
+      targetUser: email,
+      details: `New admin account created for ${fullName} (${email})`
+    });
+
     res.status(201).json({
       success: true,
       message: "Admin account created successfully",
@@ -314,5 +322,19 @@ exports.createAdmin = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to create admin: " + error.message });
+  }
+};
+
+// NEW: Get activity log for admin dashboard
+exports.getActivityLog = async (req, res) => {
+  try {
+    const logs = await Log.find()
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    res.status(200).json({ success: true, logs });
+  } catch (error) {
+    console.error("Activity Log Error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch activity log", error: error.message });
   }
 };
