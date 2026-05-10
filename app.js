@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const patientRoutes = require("./routes/patientRoutes");
 const caregiverRoutes = require("./routes/caregiverRoutes");
+const messageRoutes = require("./routes/messageRoutes"); // NEW
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const dashboardRoutes = require("./routes/dashboardRoutes"); 
@@ -48,6 +49,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/caregiver", caregiverRoutes);
+app.use("/api/messages", messageRoutes); // NEW
 app.use("/", dashboardRoutes);
 app.use("/api/admin", adminRoutes);
 app.use(express.static(path.join(__dirname, "public")));

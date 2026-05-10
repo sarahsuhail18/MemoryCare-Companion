@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages | MemoryCare Companion</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes msgIn  { from{opacity:0;transform:translateY(8px)}  to{opacity:1;transform:translateY(0)} }
+
+    .messages-wrapper {
+      max-width: 860px;
+      margin: 32px auto;
+      padding: 0 20px 48px;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* ── Inbox sidebar ── */
+    .inbox-panel {
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .inbox-title {
+      padding: 18px 20px;
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      color: var(--slate-800);
+      border-bottom: 1px solid var(--slate-100);
+      background: var(--slate-50);
+    }
+
+    .inbox-item {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--slate-100);
+      cursor: pointer;
+      transition: background var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .inbox-item:last-child { border-bottom: none; }
+    .inbox-item:hover { background: var(--teal-50); }
+    .inbox-item.active { background: var(--teal-100); border-left: 3px solid var(--teal-500); }
+
+    .inbox-avatar {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--teal-400), var(--teal-700));
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .inbox-info { flex: 1; min-width: 0; }
+    .inbox-name { font-weight: 700; color: var(--slate-800); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .inbox-preview { font-size: 12px; color: var(--slate-400); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+
+    .unread-badge {
+      background: var(--teal-600);
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      min-width: 20px; height: 20px;
+      border-radius: 999px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 5px;
+      flex-shrink: 0;
+    }
+
+    .inbox-empty { padding: 32px; text-align: center; color: var(--slate-400); font-size: 14px; }
+
+    /* ── Chat panel ── */
+    .chat-panel { display: flex; flex-direction: column; }
+
+    .chat-header {
+      background: linear-gradient(135deg, var(--teal-700), var(--teal-900));
+      border-radius: 20px 20px 0 0;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .chat-avatar {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .chat-name { font-weight: 700; color: white; font-size: 15px; }
+    .chat-sub  { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+    .chat-body {
+      background: var(--slate-50);
+      border: 1.5px solid var(--slate-200);
+      border-top: none;
+      min-height: 360px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-body::-webkit-scrollbar { width: 4px; }
+    .chat-body::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 4px; }
+
+    .msg-row { display: flex; flex-direction: column; max-width: 75%; animation: msgIn 0.3s ease; }
+    .msg-row.sent  { align-self: flex-end; align-items: flex-end; }
+    .msg-row.recv  { align-self: flex-start; align-items: flex-start; }
+
+    .msg-bubble { padding: 10px 15px; border-radius: 18px; font-size: 14px; line-height: 1.55; word-break: break-word; }
+    .msg-row.sent .msg-bubble { background: linear-gradient(135deg, var(--teal-500), var(--teal-700)); color: white; border-radius: 18px 18px 4px 18px; }
+    .msg-row.recv .msg-bubble { background: white; color: var(--slate-700); border: 1.5px solid var(--slate-200); border-radius: 18px 18px 18px 4px; box-shadow: var(--shadow-sm); }
+
+    .msg-time { font-size: 11px; color: var(--slate-400); margin-top: 3px; padding: 0 4px; }
+
+    .empty-chat { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; color: var(--slate-400); text-align: center; }
+    .empty-chat-icon { font-size: 2rem; margin-bottom: 8px; }
+
+    .chat-footer {
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-top: none;
+      border-radius: 0 0 20px 20px;
+      padding: 14px 18px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .msg-input {
+      flex: 1; padding: 10px 14px;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 14px; font-size: 14px;
+      font-family: var(--font-body); color: var(--slate-800);
+      resize: none; min-height: 42px; max-height: 100px;
+      outline: none; transition: border-color var(--transition); overflow-y: auto;
+    }
+
+    .msg-input:focus { border-color: var(--teal-400); box-shadow: 0 0 0 3px rgba(46,148,146,0.10); }
+
+    .btn-send {
+      background: linear-gradient(135deg, var(--teal-500), var(--teal-700));
+      color: white; border: none;
+      width: 42px; height: 42px;
+      border-radius: 10px; cursor: pointer;
+      font-size: 16px; transition: all var(--transition);
+      box-shadow: var(--shadow-teal);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    .btn-send:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,148,146,0.30); }
+    .btn-send:active { transform: scale(0.95); }
+    .btn-send:disabled { background: var(--slate-200); box-shadow: none; cursor: not-allowed; }
+
+    .select-prompt {
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 20px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 20px;
+      color: var(--slate-400); text-align: center;
+      box-shadow: var(--shadow-sm);
+      min-height: 300px;
+    }
+
+    .select-prompt-icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+    @media (max-width: 640px) {
+      .messages-wrapper { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/caregiver/dashboard.html" class="logo">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.07 3 11.5 3.68 12 4.5C12.5 3.68 13.93 3 15.5 3C18.58 3 21 5.42 21 8.5C21 14.5 12 21 12 21Z" fill="rgba(255,255,255,0.25)" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><polyline points="5,10 7.5,8 9.5,12 11.5,7 13.5,11 15.5,9 18,10" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>
+        MemoryCare
+      </a>
+      <div class="nav-links">
+        <a href="/caregiver/dashboard.html">Dashboard</a>
+        <a href="/caregiver/messages.html" class="active">Messages</a>
+        <a href="#" id="logoutBtn">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="messages-wrapper">
+    <!-- Inbox sidebar -->
+    <div class="inbox-panel">
+      <div class="inbox-title">💬 Patients</div>
+      <div id="inboxList"><div class="inbox-empty">Loading...</div></div>
+    </div>
+
+    <!-- Chat area -->
+    <div class="chat-panel" id="chatPanel">
+      <div class="select-prompt">
+        <div class="select-prompt-icon">💬</div>
+        <p>Select a patient from the left to view your conversation.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2026 MemoryCare Companion. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="/contact.html">Contact Us</a>
+      <a href="/about.html">About</a>
+      <a href="mailto:support@memorycare.com">support@memorycare.com</a>
+    </div>
+    <p class="footer-note">Built with care by Rameen &amp; Sarah</p>
+  </footer>
+
+  <script src="/js/logout.js"></script>
+  <script>
+    let activePatientId = null;
+    let activePatientName = "";
+
+    function formatTime(ts) {
+      const d = new Date(ts);
+      const today = new Date();
+      if (d.toDateString() === today.toDateString())
+        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) + " · " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    async function loadInbox() {
+      try {
+        const res = await fetch("/api/messages/caregiver/inbox");
+        const data = await res.json();
+        if (!data.success) { if (res.status === 401) window.location.href = "/login.html"; return; }
+
+        const list = document.getElementById("inboxList");
+        if (!data.inbox.length) {
+          list.innerHTML = '<div class="inbox-empty">No patients assigned yet.</div>';
+          return;
+        }
+
+        list.innerHTML = data.inbox.map(item => `
+          <div class="inbox-item ${activePatientId === item.patientId ? 'active' : ''}"
+               onclick="openConversation('${item.patientId}', '${escapeHtml(item.patientName)}', this)">
+            <div class="inbox-avatar">${item.patientName.charAt(0).toUpperCase()}</div>
+            <div class="inbox-info">
+              <div class="inbox-name">${item.patientName}</div>
+              <div class="inbox-preview">${item.lastMessage ? escapeHtml(item.lastMessage) : 'No messages yet'}</div>
+            </div>
+            ${item.unreadCount > 0 ? `<div class="unread-badge">${item.unreadCount}</div>` : ""}
+          </div>`).join("");
+      } catch (e) { console.error(e); }
+    }
+
+    async function openConversation(patientId, patientName, el) {
+      activePatientId = patientId;
+      activePatientName = patientName;
+
+      // Update active state in sidebar
+      document.querySelectorAll(".inbox-item").forEach(i => i.classList.remove("active"));
+      el.classList.add("active");
+      // Remove unread badge
+      const badge = el.querySelector(".unread-badge");
+      if (badge) badge.remove();
+
+      const panel = document.getElementById("chatPanel");
+      panel.innerHTML = `
+        <div class="chat-header">
+          <div class="chat-avatar">${patientName.charAt(0).toUpperCase()}</div>
+          <div>
+            <div class="chat-name">${patientName}</div>
+            <div class="chat-sub">Patient</div>
+          </div>
+        </div>
+        <div class="chat-body" id="chatBody"></div>
+        <div class="chat-footer">
+          <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleKey(event)"></textarea>
+          <button class="btn-send" onclick="sendMessage()" title="Send">➤</button>
+        </div>`;
+
+      document.getElementById("msgInput").addEventListener("input", function() {
+        this.style.height = "auto";
+        this.style.height = Math.min(this.scrollHeight, 100) + "px";
+      });
+
+      await fetchConversation(patientId);
+    }
+
+    async function fetchConversation(patientId) {
+      try {
+        const res = await fetch(`/api/messages/caregiver/conversation/${patientId}`);
+        const data = await res.json();
+        if (!data.success) return;
+        renderMessages(data.messages);
+        scrollToBottom();
+      } catch (e) { console.error(e); }
+    }
+
+    function renderMessages(messages) {
+      const body = document.getElementById("chatBody");
+      if (!body) return;
+      if (!messages.length) {
+        body.innerHTML = `<div class="empty-chat"><div class="empty-chat-icon">💬</div><p>No messages yet. Start the conversation!</p></div>`;
+        return;
+      }
+      body.innerHTML = messages.map(m => {
+        const isSent = m.senderRole === "caregiver";
+        return `<div class="msg-row ${isSent ? "sent" : "recv"}">
+          <div class="msg-bubble">${escapeHtml(m.content)}</div>
+          <div class="msg-time">${formatTime(m.createdAt)}</div>
+        </div>`;
+      }).join("");
+    }
+
+    function scrollToBottom() {
+      const body = document.getElementById("chatBody");
+      if (body) body.scrollTop = body.scrollHeight;
+    }
+
+    function handleKey(e) {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    }
+
+    async function sendMessage() {
+      if (!activePatientId) return;
+      const input = document.getElementById("msgInput");
+      const content = input?.value.trim();
+      if (!content) return;
+
+      const btn = document.querySelector(".btn-send");
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("/api/messages/caregiver/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ patientId: activePatientId, content })
+        });
+        const data = await res.json();
+        if (data.success) {
+          input.value = ""; input.style.height = "auto";
+          const body = document.getElementById("chatBody");
+          const empty = body.querySelector(".empty-chat");
+          if (empty) empty.remove();
+          const div = document.createElement("div");
+          div.className = "msg-row sent";
+          div.innerHTML = `<div class="msg-bubble">${escapeHtml(content)}</div><div class="msg-time">${formatTime(data.message.createdAt)}</div>`;
+          body.appendChild(div);
+          scrollToBottom();
+          loadInbox(); // refresh preview
+        }
+      } catch (e) { console.error(e); }
+      finally { btn.disabled = false; }
+    }
+
+    loadInbox();
+    // Poll for new messages every 30s if a conversation is open
+    setInterval(async () => {
+      if (activePatientId) await fetchConversation(activePatientId);
+      loadInbox();
+    }, 30000);
+  </script>
+</body>
+</html>
