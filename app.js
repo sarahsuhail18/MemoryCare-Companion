@@ -61,3 +61,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+// NEW: Start cron scheduler after server is up
+require("./config/scheduler");
