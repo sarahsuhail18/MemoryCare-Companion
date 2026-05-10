@@ -76,6 +76,49 @@ const userSchema = new mongoose.Schema(
 
     resetPasswordExpire: {
       type: Date
+    },
+
+    // ─── Caregiver approval fields ───────────────────────────────────────────
+    approvalStatus: {
+      type: String,
+      enum: ["not_required", "pending", "approved", "rejected"],
+      default: "not_required"
+    },
+
+    rejectionReason: {
+      type: String,
+      default: ""
+    },
+
+    // Extra caregiver profile fields collected at signup
+    phone: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+
+    qualification: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+
+    experience: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+
+    organization: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+
+    bio: {
+      type: String,
+      trim: true,
+      default: ""
     }
   },
   {

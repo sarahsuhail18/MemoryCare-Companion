@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pending Approvals | MemoryCare Companion</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .fade-up { opacity:0; animation: fadeUp 0.45s ease forwards; }
+    .fade-up:nth-child(1){animation-delay:.05s}.fade-up:nth-child(2){animation-delay:.12s}
+    .fade-up:nth-child(3){animation-delay:.19s}
+
+    .page-container { max-width: 860px; margin: 0 auto; padding: 0 20px 48px; }
+
+    .pending-card {
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 18px;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--transition);
+      animation: fadeUp 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    .pending-card:hover { box-shadow: var(--shadow-md); }
+
+    .pending-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pending-name {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      color: var(--slate-800);
+      margin-bottom: 2px;
+    }
+
+    .pending-email { font-size: 13px; color: var(--slate-400); }
+
+    .pending-badge {
+      background: #fffbeb;
+      color: #92400e;
+      border: 1px solid #fde68a;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .info-chip {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    .info-chip-label {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--slate-400);
+      margin-bottom: 3px;
+    }
+
+    .info-chip-value { font-size: 13.5px; color: var(--slate-700); font-weight: 600; }
+
+    .bio-box {
+      background: var(--teal-50);
+      border: 1px solid var(--teal-100);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13.5px;
+      color: var(--slate-600);
+      font-style: italic;
+      margin-bottom: 18px;
+      line-height: 1.6;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-approve {
+      background: linear-gradient(135deg, #059669, #065f46);
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 700;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 4px 14px rgba(5,150,105,0.25);
+    }
+
+    .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(5,150,105,0.30); }
+
+    .btn-reject {
+      background: white;
+      color: #dc2626;
+      border: 1.5px solid #fecaca;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 700;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-reject:hover { background: #fef2f2; border-color: #fca5a5; }
+
+    .applied-date { font-size: 12px; color: var(--slate-400); margin-left: auto; }
+
+    .empty-state {
+      text-align: center;
+      padding: 64px 20px;
+      color: var(--slate-400);
+    }
+
+    .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; }
+
+    @media (max-width: 600px) {
+      .pending-header { flex-direction: column; }
+      .action-row { flex-direction: column; align-items: stretch; }
+      .applied-date { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/admin/dashboard.html" class="logo">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.07 3 11.5 3.68 12 4.5C12.5 3.68 13.93 3 15.5 3C18.58 3 21 5.42 21 8.5C21 14.5 12 21 12 21Z" fill="rgba(255,255,255,0.25)" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><polyline points="5,10 7.5,8 9.5,12 11.5,7 13.5,11 15.5,9 18,10" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>
+        MemoryCare
+      </a>
+      <div class="nav-links">
+        <a href="/admin/dashboard.html">Dashboard</a>
+        <a href="/admin/manage-users.html">Manage Users</a>
+        <a href="/admin/pending-approvals.html" class="active">Pending Approvals</a>
+        <a href="#" id="logoutBtn">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-container">
+
+    <section class="dashboard-header fade-up" style="margin-top:32px;">
+      <h1>Pending Caregiver Approvals</h1>
+      <p>Review and approve or reject caregiver applications before they can access the platform.</p>
+    </section>
+
+    <div id="pendingList">
+      <div class="empty-state">
+        <div class="empty-icon">⏳</div>
+        <p>Loading applications...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2026 MemoryCare Companion. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="/contact.html">Contact Us</a>
+      <a href="/about.html">About</a>
+      <a href="mailto:support@memorycare.com">support@memorycare.com</a>
+      <a href="https://github.com" target="_blank">GitHub</a>
+      <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+    </div>
+    <p class="footer-note">Built with care by Rameen &amp; Sarah</p>
+  </footer>
+
+  <script src="/js/logout.js"></script>
+  <script>
+    function showMsg(msg, type) {
+      const el = document.createElement("div");
+      el.textContent = msg;
+      el.style.cssText = `position:fixed;top:80px;right:20px;z-index:9999;padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.12);animation:fadeUp .3s ease;`;
+      el.style.background = type === "success" ? "#ecfdf5" : "#fef2f2";
+      el.style.color = type === "success" ? "#065f46" : "#991b1b";
+      el.style.border = type === "success" ? "1px solid #a7f3d0" : "1px solid #fecaca";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
+    async function loadPending() {
+      const container = document.getElementById("pendingList");
+      try {
+        const res = await fetch("/api/admin/pending-caregivers");
+        const data = await res.json();
+
+        if (!data.success) {
+          if (res.status === 401 || res.status === 403) window.location.href = "/login.html";
+          return;
+        }
+
+        if (!data.caregivers.length) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">✅</div>
+              <p>No pending applications right now. All caught up!</p>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = data.caregivers.map((c, i) => {
+          const applied = new Date(c.createdAt).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" });
+          return `
+            <div class="pending-card" style="animation-delay:${i * 0.07}s">
+              <div class="pending-header">
+                <div>
+                  <div class="pending-name">${c.fullName}</div>
+                  <div class="pending-email">${c.email} · ${c.phone || "—"}</div>
+                </div>
+                <span class="pending-badge">⏳ Pending</span>
+              </div>
+
+              <div class="info-grid">
+                <div class="info-chip">
+                  <div class="info-chip-label">Qualification</div>
+                  <div class="info-chip-value">${c.qualification || "—"}</div>
+                </div>
+                <div class="info-chip">
+                  <div class="info-chip-label">Experience</div>
+                  <div class="info-chip-value">${c.experience || "—"}</div>
+                </div>
+                <div class="info-chip">
+                  <div class="info-chip-label">Organization</div>
+                  <div class="info-chip-value">${c.organization || "—"}</div>
+                </div>
+              </div>
+
+              ${c.bio ? `<div class="bio-box">"${c.bio}"</div>` : ""}
+
+              <div class="action-row">
+                <button class="btn-approve" onclick="approve('${c._id}', this)">✓ Approve</button>
+                <button class="btn-reject"  onclick="reject('${c._id}', this)">✗ Reject</button>
+                <span class="applied-date">Applied ${applied}</span>
+              </div>
+            </div>`;
+        }).join("");
+
+      } catch (e) {
+        container.innerHTML = `<div class="empty-state"><p>Error loading applications.</p></div>`;
+      }
+    }
+
+    async function approve(id, btn) {
+      btn.disabled = true; btn.textContent = "Approving...";
+      try {
+        const res = await fetch(`/api/admin/caregivers/${id}/approve`, { method: "PATCH" });
+        const data = await res.json();
+        if (data.success) { showMsg("Caregiver approved successfully!", "success"); loadPending(); }
+        else { showMsg(data.message || "Failed.", "error"); btn.disabled = false; btn.textContent = "✓ Approve"; }
+      } catch (e) { showMsg("Error approving.", "error"); btn.disabled = false; btn.textContent = "✓ Approve"; }
+    }
+
+    async function reject(id, btn) {
+      const reason = prompt("Reason for rejection (optional — the caregiver will see this):");
+      if (reason === null) return; // cancelled
+      btn.disabled = true; btn.textContent = "Rejecting...";
+      try {
+        const res = await fetch(`/api/admin/caregivers/${id}/reject`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason: reason || "" })
+        });
+        const data = await res.json();
+        if (data.success) { showMsg("Application rejected.", "error"); loadPending(); }
+        else { showMsg(data.message || "Failed.", "error"); btn.disabled = false; btn.textContent = "✗ Reject"; }
+      } catch (e) { showMsg("Error rejecting.", "error"); btn.disabled = false; btn.textContent = "✗ Reject"; }
+    }
+
+    loadPending();
+  </script>
+</body>
+</html>

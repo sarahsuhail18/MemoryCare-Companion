@@ -4,71 +4,56 @@ const { sendPasswordResetEmail } = require("../config/email");
 
 exports.signup = async (req, res) => {
   try {
-    const { fullName, email, password, role } = req.body;
+    const { fullName, email, password, role, phone, qualification, experience, organization, bio } = req.body;
 
     if (!fullName || !email || !password || !role) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required"
-      });
+      return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
     if (!["user", "caregiver"].includes(role)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid role. Admin accounts can only be created by an existing admin."
-      });
+      return res.status(400).json({ success: false, message: "Invalid role. Admin accounts can only be created by an existing admin." });
     }
 
     if (password.length < 8) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be at least 8 characters long"
-      });
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters long" });
+    }
+
+    if (role === "caregiver" && (!phone || !qualification || !experience || !organization)) {
+      return res.status(400).json({ success: false, message: "All caregiver profile fields are required" });
     }
 
     const existingUser = await User.findOne({ email });
-
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is already registered"
-      });
+      return res.status(400).json({ success: false, message: "Email is already registered" });
     }
 
+    const isCaregiver = role === "caregiver";
+
     const user = await User.create({
-      fullName,
-      email,
-      password,
-      role
+      fullName, email, password, role,
+      isActive: !isCaregiver,
+      approvalStatus: isCaregiver ? "pending" : "not_required",
+      phone:         isCaregiver ? phone : "",
+      qualification: isCaregiver ? qualification : "",
+      experience:    isCaregiver ? experience : "",
+      organization:  isCaregiver ? organization : "",
+      bio:           isCaregiver ? (bio || "") : ""
     });
 
     res.status(201).json({
       success: true,
-      message: "Account created successfully",
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role
-      }
+      message: isCaregiver
+        ? "Application submitted! Your account is pending admin approval."
+        : "Account created successfully",
+      pendingApproval: isCaregiver,
+      user: { id: user._id, fullName: user.fullName, email: user.email, role: user.role }
     });
   } catch (error) {
     console.error("Signup Error:", error);
-    
-    // Handle duplicate key error
     if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already exists"
-      });
+      return res.status(400).json({ success: false, message: "Email already exists" });
     }
-
-    res.status(500).json({
-      success: false,
-      message: "Signup failed: " + error.message,
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: "Signup failed: " + error.message });
   }
 };
 
@@ -93,6 +78,19 @@ exports.login = async (req, res) => {
     }
 
     if (!user.isActive) {
+      // Give specific message based on approval status
+      if (user.approvalStatus === "pending") {
+        return res.status(403).json({
+          success: false,
+          message: "Your caregiver application is pending admin approval. Please check back later."
+        });
+      }
+      if (user.approvalStatus === "rejected") {
+        return res.status(403).json({
+          success: false,
+          message: `Your caregiver application was not approved. ${user.rejectionReason ? "Reason: " + user.rejectionReason : "Please contact support for more information."}`
+        });
+      }
       return res.status(403).json({
         success: false,
         message: "Your account is inactive. Please contact admin."

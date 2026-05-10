@@ -5,20 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign Up | MemoryCare Companion</title>
   <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .caregiver-fields { display: none; border-top: 1.5px solid var(--slate-100); margin-top: 8px; padding-top: 20px; }
+    .caregiver-fields.visible { display: block; }
+    .caregiver-notice { background: var(--teal-50); border: 1px solid var(--teal-200); border-left: 4px solid var(--teal-500); border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; font-size: 13px; color: var(--teal-700); line-height: 1.6; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .auth-container { max-width: 520px; }
+    @media (max-width: 500px) { .form-row-2 { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
-
   <nav class="navbar">
     <div class="nav-container">
       <a href="/" class="logo">
-        <span class="logo-mark">M</span>
+        <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.07 3 11.5 3.68 12 4.5C12.5 3.68 13.93 3 15.5 3C18.58 3 21 5.42 21 8.5C21 14.5 12 21 12 21Z" fill="rgba(255,255,255,0.25)" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><polyline points="5,10 7.5,8 9.5,12 11.5,7 13.5,11 15.5,9 18,10" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>
         MemoryCare
       </a>
-
-      <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/signup.html" class="btn-nav">Sign Up</a>
-      </div>
+      <div class="nav-links"><a href="/">Home</a><a href="/login.html">Login</a></div>
     </div>
   </nav>
 
@@ -29,26 +32,22 @@
 
       <div class="form-group">
         <label for="fullName">Full Name</label>
-        <input type="text" id="fullName" required />
+        <input type="text" id="fullName" placeholder="Your full name" required />
         <small class="error-message" id="fullNameError"></small>
       </div>
-
       <div class="form-group">
         <label for="email">Email Address</label>
-        <input type="email" id="email" required />
+        <input type="email" id="email" placeholder="your@email.com" required />
         <small class="error-message" id="emailError"></small>
       </div>
-
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" required />
-        <small class="hint">Minimum 8 characters.</small>
+        <input type="password" id="password" placeholder="Min 8 chars, uppercase, number" required />
         <small class="error-message" id="passwordError"></small>
       </div>
-
       <div class="form-group">
         <label for="role">Account Role</label>
-        <select id="role" required>
+        <select id="role" required onchange="handleRoleChange()">
           <option value="">Select role</option>
           <option value="user">Patient / User</option>
           <option value="caregiver">Caregiver</option>
@@ -56,21 +55,46 @@
         <small class="error-message" id="roleError"></small>
       </div>
 
-      <button type="submit" class="btn-primary auth-btn">Create Account</button>
+      <div class="caregiver-fields" id="caregiverFields">
+        <div class="caregiver-notice">🔒 Caregiver accounts require admin approval before you can log in. Please fill in your professional details below for review.</div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" placeholder="e.g. 03001234567" />
+          <small class="error-message" id="phoneError"></small>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="qualification">Qualification</label>
+            <input type="text" id="qualification" placeholder="e.g. Registered Nurse" />
+            <small class="error-message" id="qualificationError"></small>
+          </div>
+          <div class="form-group">
+            <label for="experience">Years of Experience</label>
+            <input type="text" id="experience" placeholder="e.g. 5 years" />
+            <small class="error-message" id="experienceError"></small>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="organization">Organization / Hospital</label>
+          <input type="text" id="organization" placeholder="e.g. Shifa International Hospital" />
+          <small class="error-message" id="organizationError"></small>
+        </div>
+        <div class="form-group">
+          <label for="bio">Brief Bio / Reason for Joining</label>
+          <textarea id="bio" placeholder="Tell us about yourself..." style="min-height:80px;resize:vertical;width:100%;padding:10px;border:1.5px solid var(--slate-200);border-radius:8px;font-family:inherit;font-size:14px;"></textarea>
+        </div>
+      </div>
 
-    <p class="auth-link">
-        Already have an account? <a href="/login.html">Login</a>
-    </p>
-
+      <button type="submit" class="btn-primary auth-btn" style="margin-top:8px;">Create Account</button>
+      <p class="auth-link">Already have an account? <a href="/login.html">Login</a></p>
       <p class="form-message" id="formMessage"></p>
     </form>
   </main>
 
-    <footer class="footer">
+  <footer class="footer">
     <p>&copy; 2026 MemoryCare Companion. All rights reserved.</p>
     <div class="footer-links">
-      <a href="/contact.html">Contact Us</a>
-      <a href="/about.html">About</a>
+      <a href="/contact.html">Contact Us</a><a href="/about.html">About</a>
       <a href="mailto:support@memorycare.com">support@memorycare.com</a>
       <a href="https://github.com" target="_blank">GitHub</a>
       <a href="https://linkedin.com" target="_blank">LinkedIn</a>
@@ -78,6 +102,78 @@
     <p class="footer-note">Built with care by Rameen &amp; Sarah</p>
   </footer>
 
-  <script src="/js/signup.js"></script>
+  <script>
+    function handleRoleChange() {
+      const role = document.getElementById("role").value;
+      document.getElementById("caregiverFields").classList.toggle("visible", role === "caregiver");
+    }
+
+    function clearErrors() {
+      ["fullNameError","emailError","passwordError","roleError","phoneError","qualificationError","experienceError","organizationError"]
+        .forEach(id => { const el = document.getElementById(id); if (el) el.textContent = ""; });
+      const m = document.getElementById("formMessage");
+      m.textContent = ""; m.className = "form-message";
+    }
+
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearErrors();
+
+      const fullName     = document.getElementById("fullName").value.trim();
+      const email        = document.getElementById("email").value.trim();
+      const password     = document.getElementById("password").value;
+      const role         = document.getElementById("role").value;
+      const phone        = document.getElementById("phone").value.trim();
+      const qualification= document.getElementById("qualification").value.trim();
+      const experience   = document.getElementById("experience").value.trim();
+      const organization = document.getElementById("organization").value.trim();
+      const bio          = document.getElementById("bio").value.trim();
+      const msg          = document.getElementById("formMessage");
+
+      let valid = true;
+      if (!fullName) { document.getElementById("fullNameError").textContent = "Full name is required."; valid = false; }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById("emailError").textContent = "Enter a valid email."; valid = false; }
+      if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)) { document.getElementById("passwordError").textContent = "Min 8 chars, uppercase, lowercase, number."; valid = false; }
+      if (!role) { document.getElementById("roleError").textContent = "Please select a role."; valid = false; }
+      if (role === "caregiver") {
+        if (!phone)         { document.getElementById("phoneError").textContent = "Required."; valid = false; }
+        if (!qualification) { document.getElementById("qualificationError").textContent = "Required."; valid = false; }
+        if (!experience)    { document.getElementById("experienceError").textContent = "Required."; valid = false; }
+        if (!organization)  { document.getElementById("organizationError").textContent = "Required."; valid = false; }
+      }
+      if (!valid) return;
+
+      const btn = e.target.querySelector("button[type=submit]");
+      btn.disabled = true; btn.textContent = "Creating account...";
+
+      try {
+        const res = await fetch("/api/auth/signup", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fullName, email, password, role, phone, qualification, experience, organization, bio })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (data.pendingApproval) {
+            msg.textContent = "✅ Application submitted! Your account is pending admin approval. You will be able to log in once approved.";
+            msg.className = "form-message success";
+            e.target.reset();
+            document.getElementById("caregiverFields").classList.remove("visible");
+          } else {
+            msg.textContent = "Account created! Redirecting to login...";
+            msg.className = "form-message success";
+            setTimeout(() => window.location.href = "/login.html", 1500);
+          }
+        } else {
+          msg.textContent = data.message;
+          msg.className = "form-message error";
+        }
+      } catch (err) {
+        msg.textContent = "Something went wrong. Please try again.";
+        msg.className = "form-message error";
+      } finally {
+        btn.disabled = false; btn.textContent = "Create Account";
+      }
+    });
+  </script>
 </body>
 </html>

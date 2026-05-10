@@ -6,68 +6,120 @@
   <title>Admin Dashboard | MemoryCare Companion</title>
   <link rel="stylesheet" href="/css/style.css" />
   <style>
-    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-    .fade-up{opacity:0;animation:fadeUp 0.5s ease forwards}
-    .fade-up:nth-child(1){animation-delay:.05s}.fade-up:nth-child(2){animation-delay:.12s}
-    .fade-up:nth-child(3){animation-delay:.19s}.fade-up:nth-child(4){animation-delay:.26s}
-    .fade-up:nth-child(5){animation-delay:.33s}.fade-up:nth-child(6){animation-delay:.40s}
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
 
-    .admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
-    .stat-box{background:white;border:1.5px solid var(--slate-200);border-radius:18px;padding:28px 24px;text-align:center;box-shadow:var(--shadow-sm);transition:all var(--transition);position:relative;overflow:hidden}
-    .stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--teal-400);border-radius:18px 18px 0 0}
-    .stat-box:nth-child(2)::before{background:#059669}
-    .stat-box:nth-child(3)::before{background:#dc2626}
-    .stat-box.primary{background:linear-gradient(135deg,var(--teal-600),var(--teal-900));border:none;box-shadow:var(--shadow-teal)}
-    .stat-box.primary::before{display:none}
-    .stat-box:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
-    .stat-box.primary:hover{box-shadow:0 16px 48px rgba(46,148,146,.28)}
-    .stat-number{font-family:var(--font-display);font-size:3rem;display:block;line-height:1;margin:8px 0 6px}
-    .stat-box.primary .stat-number{color:white}
-    .stat-box:not(.primary) .stat-number{color:var(--teal-700)}
-    .stat-box:nth-child(2) .stat-number{color:#059669}
-    .stat-box:nth-child(3) .stat-number{color:#dc2626}
-    .stat-label{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate-400)}
-    .stat-box.primary .stat-label{color:rgba(255,255,255,.6)}
+    .stat-box {
+      background: white;
+      border: 2px solid #e0e0e0;
+      padding: 1.5rem;
+      border-radius: 10px;
+      text-align: center;
+    }
 
-    .role-breakdown{background:white;border:1.5px solid var(--slate-200);border-radius:18px;padding:28px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
-    .section-title{font-family:var(--font-display);font-size:1.25rem;color:var(--slate-800);margin-bottom:20px;display:flex;align-items:center;gap:10px}
-    .section-title::after{content:'';flex:1;height:1px;background:var(--slate-100)}
-    .role-item{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--slate-100)}
-    .role-item:last-child{border-bottom:none}
-    .role-label{font-weight:600;color:var(--slate-700);font-size:14px;display:flex;align-items:center;gap:10px}
-    .role-icon{width:32px;height:32px;border-radius:8px;background:var(--teal-100);display:flex;align-items:center;justify-content:center;font-size:15px}
-    .role-count{font-family:var(--font-display);font-size:1.5rem;color:var(--teal-700)}
+    .stat-box.primary {
+      background: linear-gradient(135deg, #a8d5d5 0%, #7db8bc 100%);
+      color: white;
+      border: none;
+    }
 
-    .admin-actions{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      display: block;
+      margin: 0.5rem 0;
+    }
 
-    .system-info{background:var(--teal-50);border:1px solid var(--teal-100);border-left:4px solid var(--teal-500);padding:20px 24px;border-radius:14px;margin-bottom:20px}
-    .info-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--teal-600);margin-bottom:12px}
-    .info-item{padding:4px 0;color:var(--slate-600);font-size:13.5px}
+    .stat-label {
+      font-size: 0.95rem;
+      opacity: 0.8;
+    }
 
-    .activity-card{background:white;border:1.5px solid var(--slate-200);border-radius:18px;padding:28px;box-shadow:var(--shadow-sm)}
-    .timeline{position:relative;padding-left:28px}
-    .timeline::before{content:'';position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--slate-100);border-radius:2px}
-    .timeline-item{position:relative;padding-bottom:22px;animation:fadeUp .4s ease forwards;opacity:0}
-    .timeline-item:last-child{padding-bottom:0}
-    .timeline-dot{position:absolute;left:-24px;top:4px;width:20px;height:20px;border-radius:50%;background:white;border:2px solid var(--teal-400);display:flex;align-items:center;justify-content:center;font-size:9px;z-index:1}
-    .timeline-dot.role{border-color:#6366f1;background:#eef2ff}
-    .timeline-dot.active{border-color:#059669;background:#ecfdf5}
-    .timeline-dot.deact{border-color:#dc2626;background:#fef2f2}
-    .timeline-dot.admin{border-color:#d97706;background:#fffbeb}
-    .timeline-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px}
-    .timeline-action{font-weight:700;color:var(--slate-800);font-size:14px}
-    .timeline-time{font-size:11.5px;color:var(--slate-400);white-space:nowrap;margin-left:12px}
-    .timeline-detail{font-size:13px;color:var(--slate-500);margin-bottom:2px}
-    .timeline-by{font-size:11.5px;color:var(--slate-400)}
-    .empty-log{text-align:center;padding:32px;color:var(--slate-400);font-size:14px}
+    .role-breakdown {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
 
-    @media(max-width:700px){.admin-stats{grid-template-columns:1fr}}
+    .role-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .role-item:last-child {
+      border-bottom: none;
+    }
+
+    .role-label {
+      font-weight: 600;
+      color: #2d4a4b;
+    }
+
+    .role-count {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #7db8bc;
+    }
+
+    .admin-actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn-admin {
+      background: linear-gradient(135deg, #a8d5d5 0%, #7db8bc 100%);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-admin:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(122, 184, 188, 0.3);
+    }
+
+    .system-info {
+      background: #f0f8f8;
+      border-left: 4px solid #7db8bc;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 2rem;
+    }
+
+    .info-title {
+      font-weight: 600;
+      color: #2d4a4b;
+      margin-bottom: 1rem;
+    }
+
+    .info-item {
+      padding: 0.5rem 0;
+      color: #555;
+    }
   </style>
 </head>
 <body>
+
   <nav class="navbar">
     <div class="nav-container">
-      <a href="/admin/dashboard.html" class="logo"><span class="logo-mark">M</span>MemoryCare</a>
+      <a href="/admin/dashboard.html" class="logo">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.07 3 11.5 3.68 12 4.5C12.5 3.68 13.93 3 15.5 3C18.58 3 21 5.42 21 8.5C21 14.5 12 21 12 21Z" fill="rgba(255,255,255,0.25)" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><polyline points="5,10 7.5,8 9.5,12 11.5,7 13.5,11 15.5,9 18,10" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>
+        MemoryCare
+      </a>
+
       <div class="nav-links">
         <a href="/admin/dashboard.html" class="active">Dashboard</a>
         <a href="/admin/manage-users.html">Manage Users</a>
@@ -77,12 +129,12 @@
   </nav>
 
   <main class="dashboard-container">
-    <section class="dashboard-header fade-up">
+    <section class="dashboard-header">
       <h1>System Administration</h1>
       <p>Manage users, roles, and system access control</p>
     </section>
 
-    <div class="admin-stats fade-up">
+    <section class="admin-stats" id="statsContainer">
       <div class="stat-box primary">
         <span class="stat-label">Total Users</span>
         <span class="stat-number" id="totalUsers">0</span>
@@ -92,47 +144,51 @@
         <span class="stat-number" id="activeUsers">0</span>
       </div>
       <div class="stat-box">
-        <span class="stat-label">Inactive</span>
+        <span class="stat-label">Inactive Accounts</span>
         <span class="stat-number" id="inactiveUsers">0</span>
       </div>
-    </div>
+    </section>
 
-    <div class="role-breakdown fade-up">
-      <div class="section-title">Users by Role</div>
+    <section class="role-breakdown">
+      <h2 style="color: #2d4a4b; margin-bottom: 1.5rem;">Users by Role</h2>
       <div class="role-item">
-        <div class="role-label"><div class="role-icon">👤</div>Patients</div>
+        <span class="role-label">👤 Patients (Regular Users)</span>
         <span class="role-count" id="userCount">0</span>
       </div>
       <div class="role-item">
-        <div class="role-label"><div class="role-icon">🏥</div>Caregivers</div>
+        <span class="role-label">🏥 Caregivers</span>
         <span class="role-count" id="caregiverCount">0</span>
       </div>
       <div class="role-item">
-        <div class="role-label"><div class="role-icon">⚙️</div>Administrators</div>
+        <span class="role-label">⚙️ Administrators</span>
         <span class="role-count" id="adminCount">0</span>
       </div>
-    </div>
+    </section>
 
-    <div class="admin-actions fade-up">
+    <section class="admin-actions">
       <a href="/admin/manage-users.html" class="btn-admin">📋 Manage Users</a>
       <a href="/admin/assign-caregiver.html" class="btn-admin">🔗 Assign Caregivers</a>
-    </div>
+      <a href="/admin/pending-approvals.html" class="btn-admin" id="pendingBtn">⏳ Pending Approvals <span id="pendingCount" style="background:rgba(255,255,255,0.25);border-radius:999px;padding:1px 8px;margin-left:4px;font-size:11px;"></span></a>
+    </section>
 
-    <div class="system-info fade-up">
-      <div class="info-title">System Status</div>
-      <div class="info-item">✅ Database connection active</div>
-      <div class="info-item">✅ Session management enabled</div>
-      <div class="info-item">✅ All dashboards operational</div>
+    <section class="system-info">
+      <div class="info-title">System Overview</div>
+      <div class="info-item">✓ Database connection active</div>
+      <div class="info-item">✓ Session management enabled</div>
+      <div class="info-item">✓ All dashboards operational</div>
       <div class="info-item" id="systemDate"></div>
-    </div>
+    </section>
 
-    <div class="activity-card fade-up">
-      <div class="section-title">Recent Activity Log</div>
-      <div id="activityLog"><div class="empty-log">Loading...</div></div>
-    </div>
+    <!-- NEW: Activity Log Section -->
+    <section class="role-breakdown">
+      <h2 style="color: #2d4a4b; margin-bottom: 1.5rem;">🕑 Recent Activity Log</h2>
+      <div id="activityLog">
+        <div style="color:#aaa; text-align:center; padding:1rem;">Loading activity log...</div>
+      </div>
+    </section>
   </main>
 
-  <footer class="footer">
+    <footer class="footer">
     <p>&copy; 2026 MemoryCare Companion. All rights reserved.</p>
     <div class="footer-links">
       <a href="/contact.html">Contact Us</a>
@@ -146,60 +202,81 @@
 
   <script src="/js/logout.js"></script>
   <script>
-    function animateCount(id,target){
-      const el=document.getElementById(id);let n=0;
-      const step=Math.max(1,Math.ceil(target/24));
-      const t=setInterval(()=>{n=Math.min(n+step,target);el.textContent=n;if(n>=target)clearInterval(t);},40);
-    }
+    async function loadAdminDashboard() {
+      try {
+        const response = await fetch("/api/admin/dashboard-stats");
+        const data = await response.json();
 
-    async function loadAdminDashboard(){
-      try{
-        const res=await fetch("/api/admin/dashboard-stats");
-        const data=await res.json();
-        if(data.success){
-          const s=data.stats;
-          animateCount("totalUsers",s.totalUsers);
-          animateCount("activeUsers",s.activeUsers);
-          animateCount("inactiveUsers",s.inactiveUsers);
-          animateCount("userCount",s.byRole.users);
-          animateCount("caregiverCount",s.byRole.caregivers);
-          animateCount("adminCount",s.byRole.admins);
-          document.getElementById("systemDate").textContent="🕐 Last updated: "+new Date().toLocaleString();
+        if (data.success) {
+          const stats = data.stats;
+          document.getElementById("totalUsers").textContent = stats.totalUsers;
+          document.getElementById("activeUsers").textContent = stats.activeUsers;
+          document.getElementById("inactiveUsers").textContent = stats.inactiveUsers;
+          document.getElementById("userCount").textContent = stats.byRole.users;
+          document.getElementById("caregiverCount").textContent = stats.byRole.caregivers;
+          document.getElementById("adminCount").textContent = stats.byRole.admins;
+          document.getElementById("systemDate").textContent = "Last updated: " + new Date().toLocaleString();
         }
-      }catch(e){console.error(e);}
-    }
-
-    async function loadActivityLog(){
-      const c=document.getElementById("activityLog");
-      try{
-        const res=await fetch("/api/admin/activity-log");
-        const data=await res.json();
-        if(!data.success||!data.logs.length){
-          c.innerHTML='<div class="empty-log">No activity recorded yet. Try changing a user role or toggling account status.</div>';
-          return;
-        }
-        const dotClass={role_changed:"role",account_activated:"active",account_deactivated:"deact",admin_created:"admin"};
-        const labels={role_changed:"Role Changed",account_activated:"Account Activated",account_deactivated:"Account Deactivated",admin_created:"Admin Created"};
-        const icons={role_changed:"🔄",account_activated:"✅",account_deactivated:"🚫",admin_created:"⚙️"};
-        c.innerHTML='<div class="timeline">'+data.logs.map((log,i)=>{
-          const dc=dotClass[log.action]||"role";
-          const time=new Date(log.createdAt).toLocaleString("en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
-          return `<div class="timeline-item" style="animation-delay:${i*.06}s">
-            <div class="timeline-dot ${dc}">${icons[log.action]||"•"}</div>
-            <div class="timeline-header">
-              <span class="timeline-action">${labels[log.action]||log.action}</span>
-              <span class="timeline-time">${time}</span>
-            </div>
-            <div class="timeline-detail">${log.details}</div>
-            <div class="timeline-by">By ${log.performedBy}</div>
-          </div>`;
-        }).join('')+'</div>';
-      }catch(e){c.innerHTML='<div class="empty-log">Error loading log.</div>';}
+      } catch (error) {
+        console.error("Error loading admin dashboard:", error);
+      }
     }
 
     loadAdminDashboard();
+    setInterval(loadAdminDashboard, 60000);
+
+    // NEW: Load activity log
+    async function loadActivityLog() {
+      try {
+        const res = await fetch("/api/admin/activity-log");
+        const data = await res.json();
+        const container = document.getElementById("activityLog");
+
+        if (!data.success || data.logs.length === 0) {
+          container.innerHTML = '<div style="color:#aaa; text-align:center; padding:1rem;">No activity recorded yet.</div>';
+          return;
+        }
+
+        const actionLabels = {
+          role_changed: "🔄 Role Changed",
+          account_activated: "✅ Account Activated",
+          account_deactivated: "🚫 Account Deactivated",
+          admin_created: "⚙️ Admin Created"
+        };
+
+        container.innerHTML = data.logs.map(log => `
+          <div class="role-item" style="flex-direction:column; align-items:flex-start; gap:0.2rem;">
+            <div style="display:flex; justify-content:space-between; width:100%;">
+              <span class="role-label">${actionLabels[log.action] || log.action}</span>
+              <span style="font-size:0.8rem; color:#aaa;">${new Date(log.createdAt).toLocaleString()}</span>
+            </div>
+            <span style="font-size:0.88rem; color:#555;">${log.details}</span>
+            <span style="font-size:0.8rem; color:#aaa;">By: ${log.performedBy}</span>
+          </div>
+        `).join("");
+      } catch (err) {
+        console.error("Activity log error:", err);
+      }
+    }
+
     loadActivityLog();
-    setInterval(loadAdminDashboard,60000);
+
+    async function loadPendingCount() {
+      try {
+        const res = await fetch("/api/admin/pending-caregivers");
+        const data = await res.json();
+        const badge = document.getElementById("pendingCount");
+        if (data.success && data.caregivers.length > 0 && badge) {
+          badge.textContent = data.caregivers.length;
+        }
+      } catch(e) {}
+    }
+    loadPendingCount();
   </script>
+</body>
+</html>
+
+
+  <script src="/js/logout.js"></script>
 </body>
 </html>
