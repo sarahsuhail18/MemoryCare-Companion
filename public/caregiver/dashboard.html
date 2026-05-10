@@ -6,236 +6,279 @@
   <title>Caregiver Dashboard | MemoryCare Companion</title>
   <link rel="stylesheet" href="/css/style.css" />
   <style>
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+      70%  { box-shadow: 0 0 0 8px rgba(220,38,38,0); }
+      100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .fade-up { opacity: 0; animation: fadeUp 0.5s ease forwards; }
+    .fade-up:nth-child(1) { animation-delay: 0.05s; }
+    .fade-up:nth-child(2) { animation-delay: 0.12s; }
+    .fade-up:nth-child(3) { animation-delay: 0.19s; }
+    .fade-up:nth-child(4) { animation-delay: 0.26s; }
+
     .dashboard-stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
     .stat-card {
-      background: linear-gradient(135deg, #a8d5d5 0%, #7db8bc 100%);
-      color: white;
-      padding: 1.5rem;
-      border-radius: 10px;
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-top: 4px solid var(--teal-400);
+      border-radius: 16px;
+      padding: 22px;
       text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition);
     }
 
-    .stat-number {
-      font-size: 2.5rem;
-      font-weight: bold;
+    .stat-card:nth-child(2) { border-top-color: #059669; }
+    .stat-card:nth-child(3) { border-top-color: #dc2626; }
+
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+    .stat-card .stat-number {
+      font-family: var(--font-display);
+      font-size: 2.6rem;
+      color: var(--teal-700);
       display: block;
-      margin: 0.5rem 0;
+      line-height: 1;
+      margin: 8px 0 4px;
     }
 
-    .stat-label {
-      font-size: 0.95rem;
-      opacity: 0.9;
+    .stat-card:nth-child(2) .stat-number { color: #059669; }
+    .stat-card:nth-child(3) .stat-number { color: #dc2626; }
+
+    .stat-card .stat-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--slate-400);
     }
 
     .alert-box {
-      background: #fff3cd;
-      border-left: 4px solid #ffc107;
-      padding: 1.5rem;
-      border-radius: 6px;
-      margin-bottom: 2rem;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      animation: fadeUp 0.4s ease forwards;
     }
 
-    .alert-title {
-      font-weight: 600;
-      color: #856404;
-      margin-bottom: 0.5rem;
+    .alert-box.ok   { background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #065f46; }
+    .alert-box.warn { background: #fff7ed; border: 1.5px solid #fed7aa; color: #9a3412; }
+
+    .alert-icon { font-size: 1.3rem; margin-top: 1px; }
+    .alert-title { font-weight: 700; margin-bottom: 2px; font-size: 14px; }
+    .alert-item  { font-size: 13px; opacity: 0.85; padding: 2px 0; }
+
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      color: var(--slate-800);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .alert-item {
-      padding: 0.5rem 0;
-      color: #856404;
-    }
+    .section-heading::after { content: ''; flex: 1; height: 1px; background: var(--slate-200); }
 
     .patient-section {
       background: white;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
+      border: 1.5px solid var(--slate-200);
+      border-left: 5px solid var(--teal-400);
+      border-radius: 16px;
+      padding: 22px 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition);
+      animation: slideIn 0.4s ease forwards;
+      opacity: 0;
     }
+
+    .patient-section:hover { box-shadow: var(--shadow-md); transform: translateX(3px); }
+    .patient-section.status-good    { border-left-color: #059669; }
+    .patient-section.status-warn    { border-left-color: #d97706; }
+    .patient-section.status-danger  { border-left-color: #dc2626; }
+    .patient-section.status-neutral { border-left-color: var(--slate-300); }
 
     .patient-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--slate-100);
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .patient-name {
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: #2d4a4b;
+    .patient-name-row { display: flex; align-items: center; gap: 10px; }
+    .patient-name { font-weight: 700; color: var(--slate-800); font-size: 16px; }
+
+    .missed-badge {
+      background: #dc2626;
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+      animation: pulse-ring 1.5s ease infinite;
     }
+
+    .patient-header-right { display: flex; align-items: center; gap: 10px; }
+
+    .view-details-link {
+      font-size: 12px;
+      color: var(--teal-600);
+      font-weight: 700;
+      text-decoration: none;
+      padding: 5px 12px;
+      border: 1.5px solid var(--teal-200);
+      border-radius: 999px;
+      transition: all var(--transition);
+    }
+
+    .view-details-link:hover { background: var(--teal-50); border-color: var(--teal-400); }
 
     .patient-progress {
-      background: linear-gradient(90deg, #e0f2f1, #b2dfdb);
-      padding: 0.8rem 1.5rem;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #00695c;
+      background: var(--teal-100);
+      color: var(--teal-700);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--teal-200);
+      white-space: nowrap;
     }
 
-    .patient-tasks {
-      display: grid;
-      gap: 0.8rem;
-    }
+    .patient-section.status-good .patient-progress   { background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+    .patient-section.status-warn .patient-progress   { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+    .patient-section.status-danger .patient-progress { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+
+    .patient-tasks { display: flex; flex-direction: column; gap: 8px; }
 
     .patient-task {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.8rem;
-      background: #f5f5f5;
-      border-radius: 6px;
-      font-size: 0.95rem;
+      padding: 10px 14px;
+      border-radius: 10px;
+      transition: transform var(--transition);
     }
+
+    .patient-task:hover { transform: translateX(3px); }
+
+    .task-left { flex: 1; }
+    .task-name { font-weight: 600; color: var(--slate-700); margin-bottom: 2px; font-size: 13.5px; }
+    .task-meta { font-size: 12px; color: var(--slate-400); }
 
     .task-status-badge {
-      display: inline-block;
-      padding: 0.3rem 0.7rem;
-      border-radius: 15px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
     }
 
-    .task-status-badge.pending {
-      background: #fff9c4;
-      color: #f57f17;
-    }
-
-    .task-status-badge.completed {
-      background: #c8e6c9;
-      color: #2e7d32;
-    }
-
-    .task-status-badge.missed {
-      background: #ffcdd2;
-      color: #c62828;
-    }
+    .task-status-badge.pending   { background:#fffbeb; color:#92400e; border:1px solid #fde68a; }
+    .task-status-badge.completed { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+    .task-status-badge.missed    { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
 
     .btn-add-task {
-      background: linear-gradient(135deg, #a8d5d5 0%, #7db8bc 100%);
+      background: linear-gradient(135deg, var(--teal-500), var(--teal-700));
       color: white;
       border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 6px;
+      padding: 14px;
+      border-radius: 14px;
       cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
+      font-weight: 700;
+      font-size: 14px;
+      font-family: var(--font-body);
+      transition: all var(--transition);
+      width: 100%;
+      margin-top: 8px;
+      box-shadow: var(--shadow-teal);
     }
 
-    .btn-add-task:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(122, 184, 188, 0.3);
-    }
-
-    .no-alerts {
-      color: #4caf50;
-      font-weight: 600;
-    }
-
-    .empty-patients {
-      text-align: center;
-      padding: 2rem;
-      color: #999;
-    }
+    .btn-add-task:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(46,148,146,0.28); }
 
     .modal {
       display: none;
       position: fixed;
       z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
+      inset: 0;
+      background: rgba(15,23,42,0.55);
+      backdrop-filter: blur(4px);
     }
 
     .modal-content {
-      background-color: white;
+      background: white;
       margin: 5% auto;
-      padding: 2rem;
-      border-radius: 10px;
+      padding: 36px;
+      border-radius: 24px;
       width: 90%;
       max-width: 500px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      box-shadow: var(--shadow-xl);
+      animation: fadeUp 0.3s ease;
     }
 
     .modal-header {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      color: #2d4a4b;
-    }
-
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #2d4a4b;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 0.8rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 1rem;
-      font-family: inherit;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: #7db8bc;
-      box-shadow: 0 0 0 3px rgba(122, 184, 188, 0.1);
-    }
-
-    .form-actions {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      margin-bottom: 24px;
+      color: var(--slate-900);
       display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: center;
     }
+
+    .close-modal { font-size: 1.4rem; cursor: pointer; color: var(--slate-400); transition: color var(--transition); }
+    .close-modal:hover { color: var(--slate-700); }
+
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
 
     .btn-cancel {
-      background: #ccc;
-      color: #333;
-      border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
+      background: var(--slate-100); color: var(--slate-600); border: none;
+      padding: 10px 20px; border-radius: 999px; cursor: pointer;
+      font-weight: 600; font-family: var(--font-body); font-size: 14px;
+      transition: all var(--transition);
     }
+
+    .btn-cancel:hover { background: var(--slate-200); }
 
     .btn-submit {
-      background: linear-gradient(135deg, #a8d5d5 0%, #7db8bc 100%);
-      color: white;
-      border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
+      background: linear-gradient(135deg, var(--teal-500), var(--teal-700));
+      color: white; border: none; padding: 10px 24px; border-radius: 999px;
+      cursor: pointer; font-weight: 700; font-family: var(--font-body);
+      font-size: 14px; box-shadow: var(--shadow-teal); transition: all var(--transition);
     }
 
-    .close-modal {
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #999;
-      float: right;
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(46,148,146,0.28); }
+
+    .empty-patients { text-align: center; padding: 48px; color: var(--slate-400); font-size: 15px; }
+
+    @media (max-width: 640px) {
+      .dashboard-stats { grid-template-columns: 1fr; }
+      .patient-header { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
@@ -247,56 +290,49 @@
         <span class="logo-mark">M</span>
         MemoryCare
       </a>
-
       <div class="nav-links">
-        <a href="/caregiver/dashboard.html">Dashboard</a>
+        <a href="/caregiver/dashboard.html" class="active">Dashboard</a>
         <a href="#" id="logoutBtn">Logout</a>
       </div>
     </div>
   </nav>
 
   <main class="dashboard-container">
-    <section class="dashboard-header">
-      <h1 id="caregiverWelcome"></h1>
+    <section class="dashboard-header fade-up">
+      <h1 id="caregiverWelcome">Welcome</h1>
       <p>Monitor patient activity and manage routine tasks</p>
     </section>
 
-    <section class="dashboard-stats" id="statsContainer">
+    <div class="dashboard-stats fade-up">
       <div class="stat-card">
         <span class="stat-label">Total Patients</span>
         <span class="stat-number" id="totalPatients">0</span>
       </div>
       <div class="stat-card">
-        <span class="stat-label">Tasks Completed Today</span>
+        <span class="stat-label">Completed Today</span>
         <span class="stat-number" id="completedTasks">0</span>
       </div>
       <div class="stat-card">
         <span class="stat-label">Missed Actions</span>
         <span class="stat-number" id="missedTasks">0</span>
       </div>
-    </section>
+    </div>
 
-    <section id="alertsContainer">
-      <!-- Alerts will be populated here -->
-    </section>
-
-    <section id="patientsContainer">
-      <h2 style="color: #5a7c7f; margin-bottom: 1.5rem;">Your Patients</h2>
-      <!-- Patient sections will be populated here -->
-    </section>
+    <div id="alertsContainer" class="fade-up"></div>
+    <div class="section-heading fade-up">Your Patients</div>
+    <section id="patientsContainer"></section>
   </main>
 
-  <!-- Add Task Modal -->
   <div id="addTaskModal" class="modal">
     <div class="modal-content">
-      <span class="close-modal" onclick="closeAddTaskModal()">&times;</span>
-      <div class="modal-header">Add Task for Patient</div>
+      <div class="modal-header">
+        Add Task for Patient
+        <span class="close-modal" onclick="closeAddTaskModal()">&times;</span>
+      </div>
       <form id="addTaskForm">
         <div class="form-group">
           <label>Patient</label>
-          <select id="patientSelect" required>
-            <option value="">Select a patient</option>
-          </select>
+          <select id="patientSelect" required><option value="">Select a patient</option></select>
         </div>
         <div class="form-group">
           <label>Task Title</label>
@@ -314,12 +350,12 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Scheduled Time (HH:MM)</label>
+          <label>Scheduled Time</label>
           <input type="time" id="scheduledTime" required />
         </div>
         <div class="form-group">
           <label>Description (optional)</label>
-          <textarea id="taskDescription" placeholder="Add any additional notes..."></textarea>
+          <textarea id="taskDescription" placeholder="Add any notes..."></textarea>
         </div>
         <div class="form-actions">
           <button type="button" class="btn-cancel" onclick="closeAddTaskModal()">Cancel</button>
@@ -329,7 +365,7 @@
     </div>
   </div>
 
-    <footer class="footer">
+  <footer class="footer">
     <p>&copy; 2026 MemoryCare Companion. All rights reserved.</p>
     <div class="footer-links">
       <a href="/contact.html">Contact Us</a>
@@ -344,218 +380,145 @@
   <script src="/js/logout.js"></script>
   <script>
     let allPatients = [];
-    let dashboardData = {};
+
+    function animateCount(elId, target) {
+      const el = document.getElementById(elId);
+      let n = 0;
+      const step = Math.max(1, Math.ceil(target / 20));
+      const t = setInterval(() => { n = Math.min(n + step, target); el.textContent = n; if (n >= target) clearInterval(t); }, 40);
+    }
+
+    function getStatusClass(pct, missed) {
+      if (missed > 0) return "status-danger";
+      if (pct >= 80)  return "status-good";
+      if (pct > 0)    return "status-warn";
+      return "status-neutral";
+    }
 
     async function loadCaregiverDashboard() {
       try {
-        const response = await fetch("/api/caregiver/dashboard");
-        const data = await response.json();
+        const res = await fetch("/api/caregiver/dashboard");
+        const data = await res.json();
+        if (!data.success) return;
 
-        if (data.success) {
-          dashboardData = data;
-          document.getElementById("caregiverWelcome").textContent = `Welcome, ${data.caregiver.name}`;
-          document.getElementById("totalPatients").textContent = data.totalPatients;
+        document.getElementById("caregiverWelcome").textContent = `Welcome back, ${data.caregiver.name}`;
+        animateCount("totalPatients", data.totalPatients);
 
-          // Render stats
-          let completedTotal = 0;
-          let missedTotal = 0;
-          for (const patientId in data.patientStats) {
-            completedTotal += data.patientStats[patientId].completed;
-            missedTotal += data.patientStats[patientId].missed;
-          }
-          document.getElementById("completedTasks").textContent = completedTotal;
-          document.getElementById("missedTasks").textContent = missedTotal;
+        let comp = 0, miss = 0;
+        for (const id in data.patientStats) { comp += data.patientStats[id].completed; miss += data.patientStats[id].missed; }
+        animateCount("completedTasks", comp);
+        animateCount("missedTasks", miss);
 
-          renderAlerts(data.missedAlerts);
-          
-          // Load and render tasks for each patient
-          await renderPatientsWithTasks(data.patientStats);
-        }
-      } catch (error) {
-        console.error("Error loading caregiver dashboard:", error);
-      }
+        renderAlerts(data.missedAlerts);
+        await renderPatientsWithTasks(data.patientStats);
+      } catch (e) { console.error(e); }
     }
 
     async function renderPatientsWithTasks(patientStats) {
-      try {
-        // Fetch patients to get their IDs
-        const patientsResponse = await fetch("/api/caregiver/patients");
-        const patientsData = await patientsResponse.json();
-        
-        if (!patientsData.success) return;
-
-        const patients = patientsData.patients || [];
-        const container = document.getElementById("patientsContainer");
-
-        if (!patientStats || Object.keys(patientStats).length === 0) {
-          container.innerHTML = '<div class="empty-patients"><p>No patients assigned yet</p></div>';
-          return;
-        }
-
-        let html = '<h2 style="color: #5a7c7f; margin-bottom: 1.5rem;">Your Patients</h2>';
-
-        // Fetch tasks for each patient
-        for (const patientId in patientStats) {
-          const stats = patientStats[patientId];
-          const percentage = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
-
-          // Fetch tasks for this patient
-          let patientTasks = [];
-          try {
-            const tasksResponse = await fetch(`/api/caregiver/patients/${patientId}/tasks`);
-            const tasksData = await tasksResponse.json();
-            if (tasksData.success) {
-              patientTasks = tasksData.tasks || [];
-            }
-          } catch (e) {
-            console.error(`Error fetching tasks for patient ${patientId}:`, e);
-          }
-
-          html += `
-            <div class="patient-section">
-              <div class="patient-header">
-                <div class="patient-name">${stats.name}</div>
-                <div style="display:flex; align-items:center; gap:1rem;">
-                  <a href="/caregiver/patient-detail.html?id=${patientId}" style="font-size:0.85rem; color:#7db8bc; font-weight:600; text-decoration:none;">View Details →</a>
-                  <div class="patient-progress">${percentage}% Complete (${stats.completed}/${stats.total})</div>
-                </div>
-              </div>
-              <div class="patient-tasks">
-                ${stats.missed > 0 ? `<div class="patient-task" style="background: #ffebee;"><span>⚠️ ${stats.missed} task(s) missed</span></div>` : ""}
-          `;
-
-          // Display individual tasks
-          if (patientTasks.length > 0) {
-            patientTasks.forEach((task) => {
-              const statusClass = task.status === 'completed' ? 'completed' : task.status === 'missed' ? 'missed' : 'pending';
-              const statusEmoji = task.status === 'completed' ? '✓' : task.status === 'missed' ? '✗' : '⏱️';
-              html += `
-                <div class="patient-task" style="background: ${task.status === 'completed' ? '#e8f5e9' : task.status === 'missed' ? '#ffebee' : '#f5f5f5'};">
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600; color: #2d4a4b;">${task.title}</div>
-                    <div style="font-size: 0.85rem; color: #666;">⏰ ${task.scheduledTime} | ${task.taskType}</div>
-                  </div>
-                  <span style="font-size: 1.1rem; color: ${task.status === 'completed' ? '#4caf50' : task.status === 'missed' ? '#f44336' : '#ff9800'};">
-                    ${statusEmoji} ${task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                  </span>
-                </div>
-              `;
-            });
-          } else {
-            html += `<div class="patient-task"><span>No tasks for today</span></div>`;
-          }
-
-          html += `
-              </div>
-            </div>
-          `;
-        }
-
-        html += `<button class="btn-add-task" onclick="openAddTaskModal()" style="margin-top: 1rem; width: 100%; padding: 1rem;">+ Add New Task</button>`;
-        container.innerHTML = html;
-      } catch (error) {
-        console.error("Error rendering patients with tasks:", error);
+      const container = document.getElementById("patientsContainer");
+      if (!patientStats || !Object.keys(patientStats).length) {
+        container.innerHTML = '<div class="empty-patients">No patients assigned yet.</div>';
+        return;
       }
+
+      let html = "";
+      let delay = 0;
+
+      for (const patientId in patientStats) {
+        const stats = patientStats[patientId];
+        const pct = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+        const statusClass = getStatusClass(pct, stats.missed);
+
+        let tasks = [];
+        try {
+          const r = await fetch(`/api/caregiver/patients/${patientId}/tasks`);
+          const d = await r.json();
+          if (d.success) tasks = d.tasks || [];
+        } catch (e) {}
+
+        const missedBadge = stats.missed > 0 ? `<span class="missed-badge">⚠ ${stats.missed} missed</span>` : "";
+
+        const taskRows = tasks.length > 0
+          ? tasks.map(t => {
+              const emoji = t.status === "completed" ? "✓" : t.status === "missed" ? "✗" : "⏳";
+              const bg = t.status === "completed" ? "#f0fdf4" : t.status === "missed" ? "#fff5f5" : "#f8fafc";
+              return `<div class="patient-task" style="background:${bg}">
+                <div class="task-left">
+                  <div class="task-name">${t.title}</div>
+                  <div class="task-meta">🕐 ${t.scheduledTime} · ${t.taskType}</div>
+                </div>
+                <span class="task-status-badge ${t.status}">${emoji} ${t.status.charAt(0).toUpperCase()+t.status.slice(1)}</span>
+              </div>`;
+            }).join("")
+          : `<div class="patient-task" style="background:#f8fafc"><span style="color:var(--slate-400)">No tasks for today</span></div>`;
+
+        html += `<div class="patient-section ${statusClass}" style="animation-delay:${delay}s">
+          <div class="patient-header">
+            <div class="patient-name-row">
+              <div class="patient-name">${stats.name}</div>
+              ${missedBadge}
+            </div>
+            <div class="patient-header-right">
+              <a href="/caregiver/patient-detail.html?id=${patientId}" class="view-details-link">View Details →</a>
+              <div class="patient-progress">${pct}% · ${stats.completed}/${stats.total}</div>
+            </div>
+          </div>
+          <div class="patient-tasks">${taskRows}</div>
+        </div>`;
+        delay += 0.08;
+      }
+
+      html += `<button class="btn-add-task" onclick="openAddTaskModal()">+ Add New Task</button>`;
+      container.innerHTML = html;
+    }
+
+    function renderAlerts(alerts) {
+      const c = document.getElementById("alertsContainer");
+      if (!alerts || !alerts.length) {
+        c.innerHTML = `<div class="alert-box ok"><span class="alert-icon">✅</span><div><div class="alert-title">All patients are on track</div></div></div>`;
+        return;
+      }
+      const items = alerts.map(a => `<div class="alert-item">${a.patientName} missed "${a.taskTitle}" at ${a.scheduledTime}</div>`).join("");
+      c.innerHTML = `<div class="alert-box warn"><span class="alert-icon">⚠️</span><div><div class="alert-title">Missed Task Alerts</div>${items}</div></div>`;
     }
 
     async function loadAssignedPatients() {
       try {
-        const response = await fetch("/api/caregiver/patients");
-        const data = await response.json();
-
+        const res = await fetch("/api/caregiver/patients");
+        const data = await res.json();
         if (data.success) {
           allPatients = data.patients || [];
-          populatePatientSelect();
+          const sel = document.getElementById("patientSelect");
+          sel.innerHTML = '<option value="">Select a patient</option>';
+          allPatients.forEach(p => { const o = document.createElement("option"); o.value = p._id; o.textContent = p.fullName; sel.appendChild(o); });
         }
-      } catch (error) {
-        console.error("Error loading patients:", error);
-      }
+      } catch (e) {}
     }
 
-    function populatePatientSelect() {
-      const select = document.getElementById("patientSelect");
-      select.innerHTML = '<option value="">Select a patient</option>';
-      allPatients.forEach((patient) => {
-        const option = document.createElement("option");
-        option.value = patient._id;
-        option.textContent = patient.fullName;
-        select.appendChild(option);
-      });
-    }
+    function openAddTaskModal()  { document.getElementById("addTaskModal").style.display = "block"; }
+    function closeAddTaskModal() { document.getElementById("addTaskModal").style.display = "none"; document.getElementById("addTaskForm").reset(); }
 
-    function renderAlerts(alerts) {
-      const container = document.getElementById("alertsContainer");
-
-      if (!alerts || alerts.length === 0) {
-        container.innerHTML = '<div class="alert-box"><div class="no-alerts">✓ All patients are on track!</div></div>';
-        return;
-      }
-
-      let html = '<div class="alert-box"><div class="alert-title">⚠️ Missed Actions Alert</div>';
-      alerts.forEach((alert) => {
-        html += `
-          <div class="alert-item">
-            ${alert.patientName} missed ${alert.taskTitle} at ${alert.scheduledTime}
-          </div>
-        `;
-      });
-      html += "</div>";
-      container.innerHTML = html;
-    }
-
-    function openAddTaskModal() {
-      document.getElementById("addTaskModal").style.display = "block";
-    }
-
-    function closeAddTaskModal() {
-      document.getElementById("addTaskModal").style.display = "none";
-      document.getElementById("addTaskForm").reset();
-    }
-
-    document.getElementById("addTaskForm").addEventListener("submit", async (e) => {
+    document.getElementById("addTaskForm").addEventListener("submit", async e => {
       e.preventDefault();
-
-      const patientId = document.getElementById("patientSelect").value;
-      const title = document.getElementById("taskTitle").value;
-      const taskType = document.getElementById("taskType").value;
-      const scheduledTime = document.getElementById("scheduledTime").value;
-      const description = document.getElementById("taskDescription").value;
-
       try {
-        const response = await fetch("/api/caregiver/tasks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch("/api/caregiver/tasks", {
+          method: "POST", headers: {"Content-Type":"application/json"},
           body: JSON.stringify({
-            patientId,
-            title,
-            taskType,
-            scheduledTime,
-            description,
+            patientId: document.getElementById("patientSelect").value,
+            title: document.getElementById("taskTitle").value,
+            taskType: document.getElementById("taskType").value,
+            scheduledTime: document.getElementById("scheduledTime").value,
+            description: document.getElementById("taskDescription").value,
             dueDate: new Date().toISOString().split("T")[0]
           })
         });
-
-        const data = await response.json();
-
-        if (data.success) {
-          alert("Task created successfully!");
-          closeAddTaskModal();
-          loadCaregiverDashboard();
-        } else {
-          alert("Failed to create task: " + data.message);
-        }
-      } catch (error) {
-        console.error("Error creating task:", error);
-        alert("Error creating task");
-      }
+        const data = await res.json();
+        if (data.success) { closeAddTaskModal(); loadCaregiverDashboard(); }
+        else alert("Failed: " + data.message);
+      } catch (e) { alert("Error creating task"); }
     });
 
-    window.onclick = function (event) {
-      const modal = document.getElementById("addTaskModal");
-      if (event.target == modal) {
-        modal.style.display = "none";
-      }
-    };
+    window.onclick = e => { if (e.target === document.getElementById("addTaskModal")) closeAddTaskModal(); };
 
     loadCaregiverDashboard();
     loadAssignedPatients();
