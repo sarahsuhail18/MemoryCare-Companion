@@ -207,3 +207,43 @@ function getGreeting() {
 }
 
 exports.getGreeting = getGreeting;
+
+// ─── NEW: Patient Profile ────────────────────────────────────────────────────
+
+// GET /api/patient/profile — return the logged-in patient's profile fields
+exports.getPatientProfile = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const user = await User.findById(userId).select(
+      "fullName email dateOfBirth medicalConditions emergencyContact emergencyPhone"
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    console.error("Get Profile Error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch profile", error: error.message });
+  }
+};
+
+// PUT /api/patient/profile — update editable profile fields only
+exports.updatePatientProfile = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { dateOfBirth, medicalConditions, emergencyContact, emergencyPhone } = req.body;
+
+    const updated = await User.findByIdAndUpdate(
+      userId,
+      { dateOfBirth, medicalConditions, emergencyContact, emergencyPhone },
+      { new: true, runValidators: true }
+    ).select("fullName email dateOfBirth medicalConditions emergencyContact emergencyPhone");
+
+    res.status(200).json({ success: true, message: "Profile updated successfully", user: updated });
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    res.status(500).json({ success: false, message: "Failed to update profile", error: error.message });
+  }
+};
