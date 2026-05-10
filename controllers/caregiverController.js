@@ -376,7 +376,6 @@ exports.getPatientDetail = async (req, res) => {
     const { patientId } = req.params;
     const caregiverId = req.session.user.id;
 
-    // Verify this caregiver is assigned to this patient
     const caregiver = await User.findById(caregiverId);
     if (!caregiver.assignedPatients.map(id => id.toString()).includes(patientId)) {
       return res.status(403).json({ success: false, message: "Access denied" });
@@ -394,5 +393,94 @@ exports.getPatientDetail = async (req, res) => {
   } catch (error) {
     console.error("Get Patient Detail Error:", error);
     res.status(500).json({ success: false, message: "Failed to fetch patient detail", error: error.message });
+  }
+};
+
+// ─── NEW: Prescription Management ────────────────────────────────────────────
+const Prescription = require("../models/Prescription");
+
+// GET /api/caregiver/patients/:patientId/prescriptions
+exports.getPrescriptions = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const caregiverId = req.session.user.id;
+
+    const caregiver = await User.findById(caregiverId);
+    if (!caregiver.assignedPatients.map(id => id.toString()).includes(patientId)) {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+
+    const prescriptions = await Prescription.find({ patientId })
+      .populate("addedBy", "fullName")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, prescriptions });
+  } catch (error) {
+    console.error("Get Prescriptions Error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch prescriptions", error: error.message });
+  }
+};
+
+// POST /api/caregiver/patients/:patientId/prescriptions
+exports.addPrescription = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const caregiverId = req.session.user.id;
+    const { medicineName, dosage, frequency, instructions, startDate, endDate } = req.body;
+
+    const caregiver = await User.findById(caregiverId);
+    if (!caregiver.assignedPatients.map(id => id.toString()).includes(patientId)) {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+
+    if (!medicineName || !dosage || !frequency || !startDate) {
+      return res.status(400).json({ success: false, message: "Medicine name, dosage, frequency and start date are required" });
+    }
+
+    const prescription = await Prescription.create({
+      patientId,
+      addedBy: caregiverId,
+      medicineName,
+      dosage,
+      frequency,
+      instructions: instructions || "",
+      startDate,
+      endDate: endDate || null
+    });
+
+    res.status(201).json({ success: true, message: "Prescription added successfully", prescription });
+  } catch (error) {
+    console.error("Add Prescription Error:", error);
+    res.status(500).json({ success: false, message: "Failed to add prescription", error: error.message });
+  }
+};
+
+// PATCH /api/caregiver/prescriptions/:prescriptionId/discontinue
+exports.discontinuePrescription = async (req, res) => {
+  try {
+    const { prescriptionId } = req.params;
+    const { reason } = req.body;
+    const caregiverId = req.session.user.id;
+
+    const prescription = await Prescription.findById(prescriptionId);
+    if (!prescription) {
+      return res.status(404).json({ success: false, message: "Prescription not found" });
+    }
+
+    // Verify caregiver has access to this patient
+    const caregiver = await User.findById(caregiverId);
+    if (!caregiver.assignedPatients.map(id => id.toString()).includes(prescription.patientId.toString())) {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+
+    prescription.status = "discontinued";
+    prescription.discontinuedReason = reason || "";
+    prescription.endDate = new Date();
+    await prescription.save();
+
+    res.status(200).json({ success: true, message: "Prescription discontinued", prescription });
+  } catch (error) {
+    console.error("Discontinue Prescription Error:", error);
+    res.status(500).json({ success: false, message: "Failed to discontinue prescription", error: error.message });
   }
 };
