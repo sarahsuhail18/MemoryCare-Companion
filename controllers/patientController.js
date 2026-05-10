@@ -247,3 +247,20 @@ exports.updatePatientProfile = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to update profile", error: error.message });
   }
 };
+
+// ─── NEW: Patient view their own prescriptions (read-only) ───────────────────
+const Prescription = require("../models/Prescription");
+
+exports.getMyPrescriptions = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const prescriptions = await Prescription.find({ patientId: userId })
+      .populate("addedBy", "fullName")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, prescriptions });
+  } catch (error) {
+    console.error("Get My Prescriptions Error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch prescriptions", error: error.message });
+  }
+};

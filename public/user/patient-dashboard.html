@@ -6,231 +6,366 @@
   <title>Patient Dashboard | MemoryCare Companion</title>
   <link rel="stylesheet" href="/css/style.css" />
   <style>
-    .patient-greeting {
-      font-size: 2rem;
-      color: #5a7c7f;
-      font-weight: 300;
-      margin-bottom: 1rem;
+    /* ── Page-level animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes drawRing {
+      from { stroke-dashoffset: 314; }
+      to   { stroke-dashoffset: var(--offset); }
+    }
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.4); opacity: 0.6; }
     }
 
-    .progress-card {
-      background: linear-gradient(135deg, #a8d5d5 0%, #7db8bc 100%);
-      padding: 2rem;
-      border-radius: 12px;
-      margin-bottom: 2rem;
+    .fade-up { opacity: 0; animation: fadeUp 0.5s ease forwards; }
+    .fade-up:nth-child(1) { animation-delay: 0.05s; }
+    .fade-up:nth-child(2) { animation-delay: 0.12s; }
+    .fade-up:nth-child(3) { animation-delay: 0.19s; }
+    .fade-up:nth-child(4) { animation-delay: 0.26s; }
+    .fade-up:nth-child(5) { animation-delay: 0.33s; }
+    .fade-up:nth-child(6) { animation-delay: 0.40s; }
+
+    /* ── Top hero row ── */
+    .patient-hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 24px;
+      background: linear-gradient(135deg, var(--teal-700) 0%, var(--teal-900) 100%);
+      border-radius: 24px;
+      padding: 36px 40px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .patient-hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 280px; height: 280px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+
+    .patient-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: 200px;
+      width: 180px; height: 180px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 50%;
+    }
+
+    .hero-greeting {
+      font-family: var(--font-display);
+      font-size: 2rem;
       color: white;
+      margin-bottom: 6px;
+      position: relative;
+    }
+
+    .hero-sub {
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      position: relative;
+    }
+
+    /* ── Circular progress ring ── */
+    .ring-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+    }
+
+    .ring-svg { transform: rotate(-90deg); }
+
+    .ring-bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.12);
+      stroke-width: 10;
+    }
+
+    .ring-fill {
+      fill: none;
+      stroke: white;
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-dasharray: 314;
+      stroke-dashoffset: 314;
+      transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .ring-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
     }
 
-    .progress-number {
-      font-size: 3rem;
-      font-weight: bold;
+    .ring-pct {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      color: white;
+      line-height: 1;
       display: block;
-      margin: 0.5rem 0;
     }
 
-    .progress-label {
-      font-size: 1rem;
-      opacity: 0.9;
+    .ring-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
+    /* ── Mini stat chips ── */
+    .stat-chips {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 14px;
+      padding: 16px 22px;
+      flex: 1;
+      min-width: 100px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition);
+    }
+
+    .chip:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .chip-num {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      display: block;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .chip.chip-total .chip-num  { color: var(--teal-700); }
+    .chip.chip-done .chip-num   { color: #059669; }
+    .chip.chip-missed .chip-num { color: #dc2626; }
+    .chip.chip-pending .chip-num{ color: #d97706; }
+
+    .chip-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--slate-400);
+    }
+
+    /* ── Section heading ── */
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      color: var(--slate-800);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-heading::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--slate-200);
+    }
+
+    /* ── Task cards ── */
     .task-container {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
     }
 
     .task-card {
       background: white;
-      border: 2px solid #e8f0f0;
-      border-radius: 10px;
-      padding: 1.5rem;
+      border: 1.5px solid var(--slate-200);
+      border-left: 4px solid var(--slate-300);
+      border-radius: 14px;
+      padding: 18px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: all var(--transition);
+      box-shadow: var(--shadow-sm);
     }
 
     .task-card:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border-color: #a8d5d5;
+      transform: translateX(4px);
+      box-shadow: var(--shadow-md);
     }
 
     .task-card.completed {
-      background: #f0f8f8;
-      border-color: #7db8bc;
+      border-left-color: #059669;
+      background: #f0fdf4;
     }
 
-    .task-info {
-      flex: 1;
+    .task-card.missed {
+      border-left-color: #dc2626;
+      background: #fff5f5;
     }
+
+    .task-card.pending {
+      border-left-color: var(--teal-400);
+    }
+
+    .task-info { flex: 1; }
 
     .task-title {
-      font-size: 1.3rem;
-      color: #2d4a4b;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: var(--slate-800);
+      font-weight: 700;
+      margin-bottom: 4px;
     }
 
     .task-time {
-      font-size: 1rem;
-      color: #7db8bc;
-      margin-bottom: 0.3rem;
+      font-size: 13px;
+      color: var(--slate-400);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .task-type-pill {
+      display: inline-block;
+      background: var(--teal-100);
+      color: var(--teal-700);
+      border: 1px solid var(--teal-200);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      margin-left: 8px;
+      text-transform: capitalize;
+      letter-spacing: 0.02em;
     }
 
     .task-status {
-      display: inline-block;
-      padding: 0.4rem 0.8rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-top: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 6px;
     }
 
-    .task-status.pending {
-      background: #fff3cd;
-      color: #856404;
-    }
-
-    .task-status.completed {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .task-status.missed {
-      background: #f8d7da;
-      color: #721c24;
-    }
+    .task-status.pending  { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .task-status.completed{ background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .task-status.missed   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 
     .task-actions {
       display: flex;
-      gap: 0.5rem;
-      align-items: center;
       flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+      margin-left: 16px;
     }
 
     .btn-mark-done {
-      background: linear-gradient(135deg, #a8d5d5 0%, #7db8bc 100%);
+      background: linear-gradient(135deg, var(--teal-500), var(--teal-700));
       color: white;
       border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s ease;
-      width: 100%;
-      max-width: 200px;
+      font-family: var(--font-body);
+      transition: all var(--transition);
+      box-shadow: var(--shadow-teal);
+      white-space: nowrap;
     }
 
     .btn-mark-done:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(122, 184, 188, 0.3);
+      box-shadow: 0 8px 24px rgba(46,148,146,0.30);
     }
+
+    .btn-mark-done:active { transform: scale(0.97); }
 
     .btn-mark-done:disabled {
-      background: #ccc;
+      background: var(--slate-200);
+      color: var(--slate-400);
       cursor: not-allowed;
       transform: none;
-    }
-
-    .task-card.completed .btn-mark-done {
-      display: none;
-    }
-
-    .completed-time {
-      font-size: 0.9rem;
-      color: #7db8bc;
-      margin-left: 1rem;
-    }
-
-    .task-card.completed .completed-time {
-      display: block;
-    }
-
-    .task-card:not(.completed) .completed-time {
-      display: none;
-    }
-
-    .note-section {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid #e8f0f0;
+      box-shadow: none;
     }
 
     .note-input {
-      width: 100%;
-      padding: 0.8rem;
-      border: 1px solid #d0d0d0;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      resize: vertical;
-      min-height: 60px;
-      font-family: inherit;
-      margin-bottom: 0.5rem;
+      width: 180px;
+      padding: 8px 10px;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 8px;
+      font-size: 12px;
+      resize: none;
+      min-height: 52px;
+      font-family: var(--font-body);
+      color: var(--slate-700);
+      transition: border-color var(--transition);
     }
 
     .note-input:focus {
       outline: none;
-      border-color: #a8d5d5;
-      box-shadow: 0 0 0 3px rgba(168, 213, 213, 0.1);
+      border-color: var(--teal-400);
+      box-shadow: 0 0 0 3px rgba(46,148,146,0.10);
     }
 
-    .existing-notes {
-      margin-top: 1rem;
-      max-height: 150px;
-      overflow-y: auto;
+    .completed-time {
+      font-size: 12px;
+      color: #059669;
+      font-weight: 600;
+      margin-top: 4px;
     }
+
+    .note-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--slate-100); }
+
+    .existing-notes { margin-top: 8px; max-height: 120px; overflow-y: auto; }
 
     .note-item {
-      background: #f9f9f9;
-      padding: 0.8rem;
-      border-radius: 6px;
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-      color: #333;
-      border-left: 3px solid #a8d5d5;
-    }
-
-    .view-history-link {
-      display: inline-block;
-      margin-top: 1rem;
-      color: #7db8bc;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .view-history-link:hover {
-      text-decoration: underline;
+      background: var(--slate-50);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--slate-600);
+      border-left: 3px solid var(--teal-300);
     }
 
     .empty-state {
       text-align: center;
-      padding: 2rem;
-      color: #999;
+      padding: 48px 20px;
+      color: var(--slate-400);
     }
 
-    .empty-state-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
+    .empty-state-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; }
 
-    @media (max-width: 768px) {
-      .task-card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .task-actions {
-        width: 100%;
-        margin-top: 1rem;
-      }
-
-      .btn-mark-done {
-        width: 100%;
-      }
+    @media (max-width: 600px) {
+      .patient-hero { grid-template-columns: 1fr; }
+      .ring-wrapper { margin: auto; }
+      .task-card { flex-direction: column; align-items: flex-start; }
+      .task-actions { width: 100%; margin-left: 0; margin-top: 12px; align-items: stretch; }
+      .note-input { width: 100%; }
+      .stat-chips { gap: 8px; }
     }
   </style>
 </head>
@@ -239,48 +374,104 @@
   <nav class="navbar">
     <div class="nav-container">
       <a href="/user/dashboard.html" class="logo">
-        <span class="logo-mark">M</span>
+        <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.07 3 11.5 3.68 12 4.5C12.5 3.68 13.93 3 15.5 3C18.58 3 21 5.42 21 8.5C21 14.5 12 21 12 21Z" fill="rgba(255,255,255,0.25)" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><polyline points="5,10 7.5,8 9.5,12 11.5,7 13.5,11 15.5,9 18,10" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>
         MemoryCare
       </a>
-
       <div class="nav-links">
         <a href="/user/dashboard.html" class="active">Dashboard</a>
+        <a href="/user/history.html">History</a>
+        <a href="/user/profile.html">My Profile</a>
+        <a href="/user/settings.html">Settings</a>
         <a href="#" id="logoutBtn">Logout</a>
       </div>
     </div>
   </nav>
 
   <main class="dashboard-container">
-    <section class="dashboard-header">
-      <h1 class="patient-greeting" id="greeting"></h1>
-      <p id="userWelcome"></p>
-    </section>
 
-    <section class="progress-card" id="progressCard">
-      <span class="progress-label">Today's Progress</span>
-      <span class="progress-number" id="completionPercentage">0%</span>
-      <span class="progress-label" id="taskCount">0 of 0 completed</span>
-    </section>
-
-    <section class="dashboard-grid">
-      <h2 style="width: 100%; color: #5a7c7f; margin-bottom: 1rem;">Today's Care Tasks</h2>
-      <div class="task-container" id="tasksContainer">
-        <div class="empty-state">
-          <div class="empty-state-icon">📋</div>
-          <p>Loading your tasks...</p>
+    <!-- Hero with circular ring -->
+    <section class="patient-hero fade-up">
+      <div>
+        <div class="hero-greeting" id="greeting">Good morning</div>
+        <div class="hero-sub" id="userWelcome">Here are your care tasks for today</div>
+      </div>
+      <div class="ring-wrapper">
+        <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+          <circle class="ring-bg" cx="60" cy="60" r="50"/>
+          <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="50"/>
+        </svg>
+        <div class="ring-center">
+          <span class="ring-pct" id="ringPct">0%</span>
+          <span class="ring-label">Done</span>
         </div>
       </div>
     </section>
+
+    <!-- Stat chips -->
+    <div class="stat-chips fade-up">
+      <div class="chip chip-total">
+        <span class="chip-num" id="statTotal">0</span>
+        <span class="chip-label">Total</span>
+      </div>
+      <div class="chip chip-done">
+        <span class="chip-num" id="statDone">0</span>
+        <span class="chip-label">Completed</span>
+      </div>
+      <div class="chip chip-pending">
+        <span class="chip-num" id="statPending">0</span>
+        <span class="chip-label">Pending</span>
+      </div>
+      <div class="chip chip-missed">
+        <span class="chip-num" id="statMissed">0</span>
+        <span class="chip-label">Missed</span>
+      </div>
+    </div>
+
+    <!-- Tasks -->
+    <div class="section-heading fade-up">Today's Care Tasks</div>
+    <div class="task-container" id="tasksContainer">
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <p>Loading your tasks...</p>
+      </div>
+    </div>
+
   </main>
 
   <footer class="footer">
-    <p>&copy; 2026 MemoryCare Companion</p>
-    <p class="footer-note">Supporting your daily care routine</p>
+    <p>&copy; 2026 MemoryCare Companion. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="/contact.html">Contact Us</a>
+      <a href="/about.html">About</a>
+      <a href="mailto:support@memorycare.com">support@memorycare.com</a>
+      <a href="https://github.com" target="_blank">GitHub</a>
+      <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+    </div>
+    <p class="footer-note">Built with care by Rameen &amp; Sarah</p>
   </footer>
 
   <script src="/js/logout.js"></script>
   <script>
     let allTasks = [];
+
+    function setRing(pct) {
+      const circumference = 314;
+      const offset = circumference - (pct / 100) * circumference;
+      const ring = document.getElementById("ringFill");
+      ring.style.strokeDashoffset = offset;
+      document.getElementById("ringPct").textContent = pct + "%";
+    }
+
+    function animateCount(elId, target) {
+      const el = document.getElementById(elId);
+      let start = 0;
+      const step = Math.ceil(target / 20);
+      const timer = setInterval(() => {
+        start = Math.min(start + step, target);
+        el.textContent = start;
+        if (start >= target) clearInterval(timer);
+      }, 40);
+    }
 
     async function loadAllTasks() {
       try {
@@ -291,17 +482,21 @@
           allTasks = data.tasks || [];
           renderTasks();
 
-          const completed = allTasks.filter((t) => t.status === "completed").length;
-          const total = allTasks.length;
-          const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+          const completed = allTasks.filter(t => t.status === "completed").length;
+          const missed    = allTasks.filter(t => t.status === "missed").length;
+          const pending   = allTasks.filter(t => t.status === "pending").length;
+          const total     = allTasks.length;
+          const pct       = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-          document.getElementById("completionPercentage").textContent = `${percentage}%`;
-          document.getElementById("taskCount").textContent = `${completed} of ${total} completed`;
-          
+          setRing(pct);
+          animateCount("statTotal",   total);
+          animateCount("statDone",    completed);
+          animateCount("statPending", pending);
+          animateCount("statMissed",  missed);
+
           const hour = new Date().getHours();
-          let greeting = hour < 12 ? "Good morning" : (hour < 18 ? "Good afternoon" : "Good evening");
+          const greeting = hour < 12 ? "Good morning ☀️" : hour < 18 ? "Good afternoon 🌤" : "Good evening 🌙";
           document.getElementById("greeting").textContent = greeting;
-          document.getElementById("userWelcome").textContent = "Here are your care tasks for today";
         }
       } catch (error) {
         console.error("Error loading tasks:", error);
@@ -315,68 +510,57 @@
       if (!allTasks || allTasks.length === 0) {
         container.innerHTML = `
           <div class="empty-state">
-            <div class="empty-state-icon">✓</div>
-            <p>Great! You have no tasks for today. Rest well!</p>
-          </div>
-        `;
+            <div class="empty-state-icon">✅</div>
+            <p>No tasks for today — rest well!</p>
+          </div>`;
         return;
       }
 
-      container.innerHTML = allTasks
-        .map(
-          (task) => `
-        <div class="task-card ${task.status === "completed" ? "completed" : ""}">
+      container.innerHTML = allTasks.map((task, i) => `
+        <div class="task-card ${task.status} fade-up" style="animation-delay:${0.05 + i * 0.07}s">
           <div class="task-info">
             <div class="task-title">${task.title}</div>
-            <div class="task-time">⏰ ${task.scheduledTime}</div>
-            <span class="task-status ${task.status}">${task.status.charAt(0).toUpperCase() + task.status.slice(1)}</span>
-            ${task.completedAt ? `<div class="completed-time">✓ Completed at ${new Date(task.completedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>` : ""}
-            
+            <div class="task-time">
+              🕐 ${task.scheduledTime}
+              <span class="task-type-pill">${task.taskType}</span>
+            </div>
+            <span class="task-status ${task.status}">
+              ${task.status === 'completed' ? '✓' : task.status === 'missed' ? '✗' : '⏳'}
+              ${task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+            </span>
+            ${task.completedAt
+              ? `<div class="completed-time">✓ Completed at ${new Date(task.completedAt).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</div>`
+              : ""}
             ${task.notes && task.notes.length > 0 ? `
               <div class="note-section">
                 <div class="existing-notes">
-                  ${task.notes.map((note) => `<div class="note-item">💬 ${note.content}</div>`).join("")}
+                  ${task.notes.map(n => `<div class="note-item">💬 ${n.content}</div>`).join("")}
                 </div>
-              </div>
-            ` : ""}
+              </div>` : ""}
           </div>
-          
           <div class="task-actions">
-            ${task.status === "pending"
-              ? `
+            ${task.status === "pending" ? `
               <button class="btn-mark-done" onclick="completeTask('${task._id}')">Mark as Done</button>
               <textarea class="note-input" placeholder="Add a note (optional)" id="note-${task._id}" maxlength="200"></textarea>
-              `
-              : ""}
+            ` : ""}
           </div>
         </div>
-      `
-        )
-        .join("");
+      `).join("");
     }
 
     async function completeTask(taskId) {
-      const noteElement = document.getElementById(`note-${taskId}`);
-      const note = noteElement ? noteElement.value.trim() : "";
-
+      const noteEl = document.getElementById(`note-${taskId}`);
+      const note = noteEl ? noteEl.value.trim() : "";
       try {
-        const response = await fetch(`/api/patient/tasks/${taskId}/complete`, {
+        const res = await fetch(`/api/patient/tasks/${taskId}/complete`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ note })
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({note})
         });
-
-        const data = await response.json();
-
-        if (data.success) {
-          loadAllTasks();
-        } else {
-          alert("Failed to complete task: " + data.message);
-        }
-      } catch (error) {
-        console.error("Error completing task:", error);
-        alert("Error completing task");
-      }
+        const data = await res.json();
+        if (data.success) { loadAllTasks(); }
+        else { alert("Failed to complete task: " + data.message); }
+      } catch (e) { alert("Error completing task"); }
     }
 
     loadAllTasks();

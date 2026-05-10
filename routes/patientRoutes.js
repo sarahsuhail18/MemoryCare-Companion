@@ -4,8 +4,9 @@ const {
   completeTask,
   getPatientHistory,
   getPatientDashboard,
-  getPatientProfile,       // NEW
-  updatePatientProfile     // NEW
+  getPatientProfile,
+  updatePatientProfile,
+  getMyPrescriptions     // NEW
 } = require("../controllers/patientController");
 const { protect, authorize } = require("../middleware/authMiddleware");
 
@@ -17,8 +18,11 @@ router.get("/tasks", protect, authorize("user"), getPatientTasks);
 router.post("/tasks/:taskId/complete", protect, authorize("user"), completeTask);
 router.get("/history", protect, authorize("user"), getPatientHistory);
 
-// NEW: Patient Profile Routes
+// Patient Profile Routes
 router.get("/profile", protect, authorize("user"), getPatientProfile);
 router.put("/profile", protect, authorize("user"), updatePatientProfile);
+
+// NEW: Patient can view their own prescriptions (read-only)
+router.get("/prescriptions", protect, authorize("user"), getMyPrescriptions);
 
 module.exports = router;
