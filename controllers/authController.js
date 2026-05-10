@@ -12,10 +12,10 @@ exports.signup = async (req, res) => {
       });
     }
 
-    if (!["user", "caregiver", "admin"].includes(role)) {
+    if (!["user", "caregiver"].includes(role)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid role selected"
+        message: "Invalid role. Admin accounts can only be created by an existing admin."
       });
     }
 
