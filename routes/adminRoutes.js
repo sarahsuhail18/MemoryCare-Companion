@@ -6,13 +6,15 @@ const {
   getDashboardStats,
   assignCaregiverToPatient,
   removeAssignment,
-  getUsersByRole
+  getUsersByRole,
+  createAdmin
 } = require("../controllers/adminController");
 
 const { protect, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
+router.post("/create-admin", protect, authorize("admin"), createAdmin);
 router.get("/dashboard-stats", protect, authorize("admin"), getDashboardStats);
 router.get("/users", protect, authorize("admin"), getAllUsers);
 router.get("/users-by-role", protect, authorize("admin"), getUsersByRole);

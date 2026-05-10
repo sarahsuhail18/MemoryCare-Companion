@@ -11,6 +11,22 @@ const MongoStore = require("connect-mongo");
 const dashboardRoutes = require("./routes/dashboardRoutes"); 
 connectDB();
 
+// Auto-create default admin if none exists
+const User = require("./models/User");
+async function seedDefaultAdmin() {
+  const adminExists = await User.findOne({ role: "admin" });
+  if (!adminExists) {
+    await User.create({
+      fullName: "System Admin",
+      email: process.env.ADMIN_EMAIL || "admin@memorycare.com",
+      password: process.env.ADMIN_PASSWORD || "Admin@1234",
+      role: "admin"
+    });
+    console.log("Default admin created: admin@memorycare.com / Admin@1234");
+  }
+}
+setTimeout(seedDefaultAdmin, 2000);
+
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));

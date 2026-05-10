@@ -301,6 +301,7 @@
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Search by name or email..." />
       </div>
+      <button class="btn-nav" onclick="openCreateAdminModal()" style="margin-left:1rem; padding:0.6rem 1.2rem;">+ Create Admin</button>
     </section>
 
     <section class="table-card">
@@ -324,6 +325,36 @@
       </div>
     </section>
   </main>
+
+  <!-- Create Admin Modal -->
+  <div id="createAdminModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeCreateAdminModal()">&times;</span>
+      <div class="modal-header">Create New Admin Account</div>
+      <div id="createAdminMsg" style="display:none; padding:0.7rem; border-radius:6px; margin-bottom:1rem;"></div>
+      <form id="createAdminForm">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="adminFullName" placeholder="Admin full name" required style="width:100%;padding:0.8rem;border:1px solid #ddd;border-radius:6px;font-size:1rem;" />
+          <small id="adminFullNameError" style="color:#c62828;"></small>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="adminEmail" placeholder="admin@example.com" required style="width:100%;padding:0.8rem;border:1px solid #ddd;border-radius:6px;font-size:1rem;" />
+          <small id="adminEmailError" style="color:#c62828;"></small>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="adminPassword" placeholder="Min 8 chars, upper, lower, number" required style="width:100%;padding:0.8rem;border:1px solid #ddd;border-radius:6px;font-size:1rem;" />
+          <small id="adminPasswordError" style="color:#c62828;"></small>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" onclick="closeCreateAdminModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Create Admin</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Change Role Modal -->
   <div id="changeRoleModal" class="modal">
@@ -352,9 +383,16 @@
     </div>
   </div>
 
-  <footer class="footer">
-    <p>&copy; 2026 MemoryCare Companion</p>
-    <p class="footer-note">User Management Control</p>
+    <footer class="footer">
+    <p>&copy; 2026 MemoryCare Companion. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="/contact.html">Contact Us</a>
+      <a href="/about.html">About</a>
+      <a href="mailto:support@memorycare.com">support@memorycare.com</a>
+      <a href="https://github.com" target="_blank">GitHub</a>
+      <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+    </div>
+    <p class="footer-note">Built with care by Rameen &amp; Sarah</p>
   </footer>
 
   <script src="/js/logout.js"></script>
@@ -505,6 +543,58 @@
       }
     };
 
+    function openCreateAdminModal() {
+      document.getElementById("createAdminModal").style.display = "block";
+    }
+
+    function closeCreateAdminModal() {
+      document.getElementById("createAdminModal").style.display = "none";
+      document.getElementById("createAdminForm").reset();
+      ["adminFullNameError","adminEmailError","adminPasswordError"].forEach(id => document.getElementById(id).textContent = "");
+      const msg = document.getElementById("createAdminMsg");
+      msg.style.display = "none";
+    }
+
+    document.getElementById("createAdminForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      ["adminFullNameError","adminEmailError","adminPasswordError"].forEach(id => document.getElementById(id).textContent = "");
+
+      const fullName = document.getElementById("adminFullName").value.trim();
+      const email = document.getElementById("adminEmail").value.trim();
+      const password = document.getElementById("adminPassword").value;
+
+      let valid = true;
+      if (!fullName) { document.getElementById("adminFullNameError").textContent = "Full name is required."; valid = false; }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) { document.getElementById("adminEmailError").textContent = "Valid email is required."; valid = false; }
+      const strongPw = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!strongPw.test(password)) { document.getElementById("adminPasswordError").textContent = "Min 8 chars with uppercase, lowercase, and number."; valid = false; }
+      if (!valid) return;
+
+      try {
+        const response = await fetch("/api/admin/create-admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fullName, email, password })
+        });
+        const data = await response.json();
+        const msg = document.getElementById("createAdminMsg");
+        msg.style.display = "block";
+        if (data.success) {
+          msg.textContent = "Admin account created successfully!";
+          msg.style.background = "#c8e6c9"; msg.style.color = "#2e7d32";
+          document.getElementById("createAdminForm").reset();
+          setTimeout(closeCreateAdminModal, 2000);
+          loadUsers();
+        } else {
+          msg.textContent = data.message;
+          msg.style.background = "#ffcdd2"; msg.style.color = "#c62828";
+        }
+      } catch (err) {
+        showMessage("Error creating admin account", "error");
+      }
+    });
+
     loadUsers();
     setInterval(loadUsers, 60000);
   </script>
@@ -517,9 +607,16 @@
     </section>
   </main>
 
-  <footer class="footer">
-    <p>&copy; 2026 MemoryCare Companion</p>
-    <p class="footer-note">by Rameen & Sarah</p>
+    <footer class="footer">
+    <p>&copy; 2026 MemoryCare Companion. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="/contact.html">Contact Us</a>
+      <a href="/about.html">About</a>
+      <a href="mailto:support@memorycare.com">support@memorycare.com</a>
+      <a href="https://github.com" target="_blank">GitHub</a>
+      <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+    </div>
+    <p class="footer-note">Built with care by Rameen &amp; Sarah</p>
   </footer>
 
   <script src="/js/logout.js"></script>
