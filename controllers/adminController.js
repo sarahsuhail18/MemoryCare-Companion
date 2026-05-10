@@ -1,6 +1,7 @@
 const Log = require("../models/Log");
 const User = require("../models/User");
 
+// Get all users
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find()
@@ -20,6 +21,7 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
+// Toggle user active/inactive status
 exports.toggleUserStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -44,15 +46,21 @@ exports.toggleUserStatus = async (req, res) => {
     await user.save();
 
     await Log.create({
-      action: user.isActive ? "account_activated" : "account_deactivated",
+      action: user.isActive
+        ? "account_activated"
+        : "account_deactivated",
       performedBy: req.session.user.email,
       targetUser: user.email,
-      details: `Account ${user.isActive ? "activated" : "deactivated"} for ${user.fullName} (${user.role})`
+      details: `Account ${
+        user.isActive ? "activated" : "deactivated"
+      } for ${user.fullName} (${user.role})`
     });
 
     res.status(200).json({
       success: true,
-      message: `User account ${user.isActive ? "activated" : "deactivated"} successfully`
+      message: `User account ${
+        user.isActive ? "activated" : "deactivated"
+      } successfully`
     });
   } catch (error) {
     res.status(500).json({
@@ -63,6 +71,7 @@ exports.toggleUserStatus = async (req, res) => {
   }
 };
 
+// Change user role
 exports.changeUserRole = async (req, res) => {
   try {
     const { id } = req.params;
@@ -85,7 +94,9 @@ exports.changeUserRole = async (req, res) => {
     }
 
     const oldRole = user.role;
+
     user.role = role;
+
     await user.save();
 
     await Log.create({
@@ -108,12 +119,18 @@ exports.changeUserRole = async (req, res) => {
   }
 };
 
-// Get admin dashboard statistics
+// Dashboard statistics
 exports.getDashboardStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
-    const activeUsers = await User.countDocuments({ isActive: true });
-    const inactiveUsers = await User.countDocuments({ isActive: false });
+
+    const activeUsers = await User.countDocuments({
+      isActive: true
+    });
+
+    const inactiveUsers = await User.countDocuments({
+      isActive: false
+    });
 
     const usersByRole = await User.aggregate([
       {
@@ -125,6 +142,7 @@ exports.getDashboardStats = async (req, res) => {
     ]);
 
     const roleStats = {};
+
     usersByRole.forEach((stat) => {
       roleStats[stat._id] = stat.count;
     });
@@ -144,6 +162,7 @@ exports.getDashboardStats = async (req, res) => {
     });
   } catch (error) {
     console.error("Dashboard Stats Error:", error);
+
     res.status(500).json({
       success: false,
       message: "Failed to fetch statistics",
@@ -181,13 +200,11 @@ exports.assignCaregiverToPatient = async (req, res) => {
       });
     }
 
-    // Add patient to caregiver's assigned patients
     if (!caregiver.assignedPatients.includes(patientId)) {
       caregiver.assignedPatients.push(patientId);
       await caregiver.save();
     }
 
-    // Add caregiver to patient's assigned caregivers
     if (!patient.assignedCaregivers.includes(caregiverId)) {
       patient.assignedCaregivers.push(caregiverId);
       await patient.save();
@@ -199,6 +216,7 @@ exports.assignCaregiverToPatient = async (req, res) => {
     });
   } catch (error) {
     console.error("Assign Caregiver Error:", error);
+
     res.status(500).json({
       success: false,
       message: "Failed to assign caregiver",
@@ -207,7 +225,7 @@ exports.assignCaregiverToPatient = async (req, res) => {
   }
 };
 
-// Remove caregiver from patient assignment
+// Remove caregiver assignment
 exports.removeAssignment = async (req, res) => {
   try {
     const { caregiverId, patientId } = req.body;
@@ -236,16 +254,18 @@ exports.removeAssignment = async (req, res) => {
       });
     }
 
-    // Remove patient from caregiver's assigned patients
-    caregiver.assignedPatients = caregiver.assignedPatients.filter(
-      (id) => id.toString() !== patientId
-    );
+    caregiver.assignedPatients =
+      caregiver.assignedPatients.filter(
+        (id) => id.toString() !== patientId
+      );
+
     await caregiver.save();
 
-    // Remove caregiver from patient's assigned caregivers
-    patient.assignedCaregivers = patient.assignedCaregivers.filter(
-      (id) => id.toString() !== caregiverId
-    );
+    patient.assignedCaregivers =
+      patient.assignedCaregivers.filter(
+        (id) => id.toString() !== caregiverId
+      );
+
     await patient.save();
 
     res.status(200).json({
@@ -254,6 +274,7 @@ exports.removeAssignment = async (req, res) => {
     });
   } catch (error) {
     console.error("Remove Assignment Error:", error);
+
     res.status(500).json({
       success: false,
       message: "Failed to remove assignment",
@@ -262,7 +283,7 @@ exports.removeAssignment = async (req, res) => {
   }
 };
 
-// Get all caregivers and patients for assignment
+// Get users by role
 exports.getUsersByRole = async (req, res) => {
   try {
     const { role } = req.query;
@@ -281,7 +302,10 @@ exports.getUsersByRole = async (req, res) => {
       });
     }
 
-    const users = await User.find({ role, isActive: true })
+    const users = await User.find({
+      role,
+      isActive: true
+    })
       .select("fullName email role assignedPatients")
       .sort({ fullName: 1 });
 
@@ -291,6 +315,7 @@ exports.getUsersByRole = async (req, res) => {
     });
   } catch (error) {
     console.error("Get Users by Role Error:", error);
+
     res.status(500).json({
       success: false,
       message: "Failed to fetch users",
@@ -298,116 +323,191 @@ exports.getUsersByRole = async (req, res) => {
     });
   }
 };
-// Create a new admin account (only callable by existing admin)
+
+// Create admin
 exports.createAdmin = async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
 
     if (!fullName || !email || !password) {
-      return res.status(400).json({ success: false, message: "All fields are required" });
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+      });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ success: false, message: "Invalid email format" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format"
+      });
     }
 
     if (password.length < 8) {
-      return res.status(400).json({ success: false, message: "Password must be at least 8 characters" });
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters"
+      });
     }
 
     const existing = await User.findOne({ email });
+
     if (existing) {
-      return res.status(400).json({ success: false, message: "Email already registered" });
+      return res.status(400).json({
+        success: false,
+        message: "Email already registered"
+      });
     }
 
-    const admin = await User.create({ fullName, email, password, role: "admin" });
+    const admin = await User.create({
+      fullName,
+      email,
+      password,
+      role: "admin"
+    });
 
     res.status(201).json({
       success: true,
       message: "Admin account created successfully",
-      user: { id: admin._id, fullName: admin.fullName, email: admin.email, role: admin.role }
+      user: {
+        id: admin._id,
+        fullName: admin.fullName,
+        email: admin.email,
+        role: admin.role
+      }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to create admin: " + error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to create admin",
+      error: error.message
+    });
   }
 };
-// ─── NEW: Caregiver Approval ──────────────────────────────────────────────────
 
-// GET /api/admin/pending-caregivers
+// Get pending caregivers
 exports.getPendingCaregivers = async (req, res) => {
   try {
-    const pending = await User.find({ role: "caregiver", approvalStatus: "pending" })
-      .select("fullName email phone qualification experience organization bio createdAt")
+    const pending = await User.find({
+      role: "caregiver",
+      approvalStatus: "pending"
+    })
+      .select(
+        "fullName email phone qualification experience organization bio createdAt"
+      )
       .sort({ createdAt: -1 });
 
-    res.status(200).json({ success: true, caregivers: pending });
+    res.status(200).json({
+      success: true,
+      caregivers: pending
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to fetch pending caregivers", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch pending caregivers",
+      error: error.message
+    });
   }
 };
 
-// PATCH /api/admin/caregivers/:id/approve
+// Approve caregiver
 exports.approveCaregiver = async (req, res) => {
   try {
     const { id } = req.params;
+
     const user = await User.findById(id);
 
     if (!user || user.role !== "caregiver") {
-      return res.status(404).json({ success: false, message: "Caregiver not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Caregiver not found"
+      });
     }
 
     user.approvalStatus = "approved";
     user.isActive = true;
+
     await user.save();
 
     await Log.create({
       action: "caregiver_approved",
       performedBy: req.session.user.email,
       targetUser: user.email,
-      details: `Caregiver account approved for ${user.fullName} (${user.email})`
+      details: `Caregiver approved for ${user.fullName}`
     });
 
-    res.status(200).json({ success: true, message: "Caregiver approved successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Caregiver approved successfully"
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to approve caregiver", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to approve caregiver",
+      error: error.message
+    });
   }
 };
 
-// PATCH /api/admin/caregivers/:id/reject
+// Reject caregiver
 exports.rejectCaregiver = async (req, res) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
+
     const user = await User.findById(id);
 
     if (!user || user.role !== "caregiver") {
-      return res.status(404).json({ success: false, message: "Caregiver not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Caregiver not found"
+      });
     }
 
     user.approvalStatus = "rejected";
     user.isActive = false;
     user.rejectionReason = reason || "";
+
     await user.save();
 
     await Log.create({
       action: "caregiver_rejected",
       performedBy: req.session.user.email,
       targetUser: user.email,
-      details: `Caregiver application rejected for ${user.fullName}. Reason: ${reason || "Not specified"}`
+      details: `Caregiver rejected for ${user.fullName}`
     });
 
-    res.status(200).json({ success: true, message: "Caregiver rejected" });
+    res.status(200).json({
+      success: true,
+      message: "Caregiver rejected successfully"
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to reject caregiver", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to reject caregiver",
+      error: error.message
+    });
   }
 };
-// Activity Log
+
+// Activity log
 exports.getActivityLog = async (req, res) => {
   try {
-    const logs = await Log.find().sort({ createdAt: -1 }).limit(50);
-    res.status(200).json({ success: true, logs });
+    const logs = await Log.find()
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    res.status(200).json({
+      success: true,
+      logs
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to fetch activity log", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch activity log",
+      error: error.message
+    });
   }
 };

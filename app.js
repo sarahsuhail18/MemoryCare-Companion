@@ -60,12 +60,13 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(PORT, () => {
-        console.log(`Server running`);
-    });
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }
 
 module.exports = app;
-// NEW: Start cron scheduler after server is up
+
+// Start cron scheduler
 require("./config/scheduler");
