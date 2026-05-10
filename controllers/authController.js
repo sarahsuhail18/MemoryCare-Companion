@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const crypto = require("crypto");
+const { sendPasswordResetEmail } = require("../config/email");
 
 exports.signup = async (req, res) => {
   try {
@@ -160,41 +161,44 @@ exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is required"
-      });
+      return res.status(400).json({ success: false, message: "Email is required" });
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "No account found with this email"
+      // Don't reveal whether email exists — security best practice
+      return res.status(200).json({
+        success: true,
+        message: "If that email is registered, a reset link has been sent."
       });
     }
 
     const resetToken = user.getResetPasswordToken();
     await user.save({ validateBeforeSave: false });
 
-    const resetUrl = `${req.protocol}://${req.get(
-      "host"
-    )}/reset-password.html?token=${resetToken}`;
+    const resetUrl = `${req.protocol}://${req.get("host")}/reset-password.html?token=${resetToken}`;
 
-    console.log("Password Reset Link:", resetUrl);
+    try {
+      await sendPasswordResetEmail(user.email, resetUrl);
+      res.status(200).json({
+        success: true,
+        message: "Password reset link sent to your email. Check your inbox (and spam folder)."
+      });
+    } catch (emailError) {
+      // Roll back token if email fails
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save({ validateBeforeSave: false });
 
-    res.status(200).json({
-      success: true,
-      message: "Password reset link generated. Check terminal console.",
-      resetUrl
-    });
+      console.error("Email send error:", emailError.message);
+      res.status(500).json({
+        success: false,
+        message: "Failed to send reset email. Please check your email configuration."
+      });
+    }
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to generate reset link",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: "Something went wrong", error: error.message });
   }
 };
 
