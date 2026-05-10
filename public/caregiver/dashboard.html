@@ -415,7 +415,10 @@
             <div class="patient-section">
               <div class="patient-header">
                 <div class="patient-name">${stats.name}</div>
-                <div class="patient-progress">${percentage}% Complete (${stats.completed}/${stats.total})</div>
+                <div style="display:flex; align-items:center; gap:1rem;">
+                  <a href="/caregiver/patient-detail.html?id=${patientId}" style="font-size:0.85rem; color:#7db8bc; font-weight:600; text-decoration:none;">View Details →</a>
+                  <div class="patient-progress">${percentage}% Complete (${stats.completed}/${stats.total})</div>
+                </div>
               </div>
               <div class="patient-tasks">
                 ${stats.missed > 0 ? `<div class="patient-task" style="background: #ffebee;"><span>⚠️ ${stats.missed} task(s) missed</span></div>` : ""}

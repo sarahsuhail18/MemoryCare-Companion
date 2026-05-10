@@ -369,3 +369,30 @@ exports.addNoteToTask = async (req, res) => {
 };
 
 // No need for module.exports as we're using exports. syntax above
+
+// ─── NEW: Get full patient profile for caregiver detail view ─────────────────
+exports.getPatientDetail = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const caregiverId = req.session.user.id;
+
+    // Verify this caregiver is assigned to this patient
+    const caregiver = await User.findById(caregiverId);
+    if (!caregiver.assignedPatients.map(id => id.toString()).includes(patientId)) {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+
+    const patient = await User.findById(patientId).select(
+      "fullName email dateOfBirth medicalConditions emergencyContact emergencyPhone"
+    );
+
+    if (!patient) {
+      return res.status(404).json({ success: false, message: "Patient not found" });
+    }
+
+    res.status(200).json({ success: true, patient });
+  } catch (error) {
+    console.error("Get Patient Detail Error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch patient detail", error: error.message });
+  }
+};

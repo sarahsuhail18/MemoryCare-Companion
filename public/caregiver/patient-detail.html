@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient Detail | MemoryCare Companion</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .detail-container {
+      max-width: 760px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .back-link {
+      display: inline-block;
+      color: #7db8bc;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .back-link:hover { text-decoration: underline; }
+
+    .section-card {
+      background: white;
+      border: 1.5px solid #e8f0f0;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .section-card h3 {
+      color: #2d4a4b;
+      font-size: 1.15rem;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1.5px solid #e8f0f0;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .info-item label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .info-item p {
+      color: #2d4a4b;
+      font-size: 0.98rem;
+      margin: 0;
+    }
+
+    .info-item.full { grid-column: 1 / -1; }
+
+    .task-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.6rem;
+      font-size: 0.95rem;
+    }
+
+    .task-row.completed { background: #e8f5e9; }
+    .task-row.missed    { background: #ffebee; }
+    .task-row.pending   { background: #f5f5f5; }
+
+    .task-row .task-name { font-weight: 600; color: #2d4a4b; }
+    .task-row .task-meta { font-size: 0.82rem; color: #888; margin-top: 0.2rem; }
+
+    .status-badge {
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .status-badge.completed { background: #d4edda; color: #155724; }
+    .status-badge.missed    { background: #f8d7da; color: #721c24; }
+    .status-badge.pending   { background: #fff3cd; color: #856404; }
+
+    .patient-name-heading {
+      font-size: 1.8rem;
+      color: #2d4a4b;
+      margin-bottom: 0.2rem;
+    }
+
+    .patient-subtitle {
+      color: #888;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #aaa;
+      padding: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 600px) {
+      .info-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/caregiver/dashboard.html" class="logo">
+        <span class="logo-mark">M</span>
+        MemoryCare
+      </a>
+      <div class="nav-links">
+        <a href="/caregiver/dashboard.html">Dashboard</a>
+        <a href="#" id="logoutBtn">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="detail-container">
+    <a href="/caregiver/dashboard.html" class="back-link">← Back to Dashboard</a>
+
+    <h2 class="patient-name-heading" id="patientName">Loading...</h2>
+    <p class="patient-subtitle">Full patient profile and today's tasks</p>
+
+    <!-- Profile Info -->
+    <div class="section-card">
+      <h3>👤 Personal & Medical Information</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <label>Full Name</label>
+          <p id="infoName">—</p>
+        </div>
+        <div class="info-item">
+          <label>Email</label>
+          <p id="infoEmail">—</p>
+        </div>
+        <div class="info-item">
+          <label>Date of Birth</label>
+          <p id="infoDOB">—</p>
+        </div>
+        <div class="info-item full">
+          <label>Medical Conditions</label>
+          <p id="infoMedical">—</p>
+        </div>
+        <div class="info-item">
+          <label>Emergency Contact</label>
+          <p id="infoContact">—</p>
+        </div>
+        <div class="info-item">
+          <label>Emergency Phone</label>
+          <p id="infoPhone">—</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Tasks -->
+    <div class="section-card">
+      <h3>📋 Today's Tasks</h3>
+      <div id="tasksList">
+        <div class="empty-state">Loading tasks...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2026 MemoryCare Companion. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="/contact.html">Contact Us</a>
+      <a href="/about.html">About</a>
+      <a href="mailto:support@memorycare.com">support@memorycare.com</a>
+      <a href="https://github.com" target="_blank">GitHub</a>
+      <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+    </div>
+    <p class="footer-note">Built with care by Rameen &amp; Sarah</p>
+  </footer>
+
+  <script src="/js/logout.js"></script>
+  <script>
+    // Get patientId from URL query string: ?id=PATIENT_ID
+    const params = new URLSearchParams(window.location.search);
+    const patientId = params.get("id");
+
+    if (!patientId) {
+      window.location.href = "/caregiver/dashboard.html";
+    }
+
+    async function loadPatientDetail() {
+      try {
+        const res = await fetch(`/api/caregiver/patients/${patientId}/detail`);
+        const data = await res.json();
+
+        if (!data.success) {
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = "/login.html";
+          }
+          return;
+        }
+
+        const p = data.patient;
+        document.getElementById("patientName").textContent = p.fullName;
+        document.getElementById("infoName").textContent = p.fullName || "—";
+        document.getElementById("infoEmail").textContent = p.email || "—";
+        document.getElementById("infoDOB").textContent = p.dateOfBirth
+          ? new Date(p.dateOfBirth).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+          : "Not provided";
+        document.getElementById("infoMedical").textContent = p.medicalConditions || "Not provided";
+        document.getElementById("infoContact").textContent = p.emergencyContact || "Not provided";
+        document.getElementById("infoPhone").textContent = p.emergencyPhone || "Not provided";
+
+      } catch (err) {
+        console.error("Error loading patient detail:", err);
+      }
+    }
+
+    async function loadTasks() {
+      try {
+        const res = await fetch(`/api/caregiver/patients/${patientId}/tasks`);
+        const data = await res.json();
+        const listEl = document.getElementById("tasksList");
+
+        if (!data.success || !data.tasks || data.tasks.length === 0) {
+          listEl.innerHTML = '<div class="empty-state">No tasks for today.</div>';
+          return;
+        }
+
+        listEl.innerHTML = data.tasks.map(task => {
+          const statusEmoji = task.status === "completed" ? "✓" : task.status === "missed" ? "✗" : "⏱";
+          return `
+            <div class="task-row ${task.status}">
+              <div>
+                <div class="task-name">${task.title}</div>
+                <div class="task-meta">⏰ ${task.scheduledTime} · ${task.taskType}</div>
+              </div>
+              <span class="status-badge ${task.status}">${statusEmoji} ${task.status.charAt(0).toUpperCase() + task.status.slice(1)}</span>
+            </div>`;
+        }).join("");
+
+      } catch (err) {
+        console.error("Error loading tasks:", err);
+        document.getElementById("tasksList").innerHTML = '<div class="empty-state">Error loading tasks.</div>';
+      }
+    }
+
+    loadPatientDetail();
+    loadTasks();
+  </script>
+</body>
+</html>
